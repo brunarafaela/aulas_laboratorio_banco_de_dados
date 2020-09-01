@@ -175,3 +175,156 @@ Aula 2 - SQL - DDL e DML
 Alteracao na estrutura das tabelas 
 ******************************************************************/
 
+
+-- adicionando novas colunas - no oracle nao tem, é somente add --
+
+ALTER TABLE curso ADD (
+conteudo VARCHAR2(50) NOT NULL,
+duracao_aula SMALLINT NOT NULL);
+
+--mudando o tipo de dado de uma coluna -- no oracle nao tem NOTIFY 
+
+DESC aluno;
+ALTER TABLE aluno MODIFY email_aluno CHAR (32);
+
+-- aumentando tamanho de uma coluna --
+DESC curso;
+ALTER TABLE curso MODIFY conteudo VARCHAR2(75);
+
+
+-- definindo um valor default para uma coluna --
+ALTER TABLE matricula MODIFY dt_hora_matr DEFAULT CURRENT_TIMESTAMP;
+
+-- adicionando check - restricao de verificacao
+
+DESC certificacao;
+ALTER TABLE certificacao ADD CONSTRAINT chk_situ_cert CHECK (
+situacao_cert IN (
+'ATIVA', 'SUSPENSA', 'DESCONTINUADA'
+));
+
+
+-- renomeando uma coluna --
+DESC matricula;
+ALTER TABLE matricula RENAME COLUMN prova_certificacao TO aproveitamento_prova_cert;
+
+--renomeando uma tabela
+desc utilizacao_software;
+ALTER TABLE utilizacao_software RENAME TO softw_uso_curso;
+
+
+
+-- POPULAR TABELAS --
+
+DELETE FROM aluno;
+SELECT * FROM aluno;
+INSERT INTO aluno VALUES (
+aluno_seq.nextval, 'Jose Ricardo Junior',
+'M', '01/02/1992', 12345, 'Rua Frey Joao 70, Ipiranga',
+'josereicardo@gmail.com', 11987654321, 'zericardo', 1234);
+
+INSERT INTO aluno VALUES (
+aluno_seq.nextval, 'Maria Rita Soares',
+'F', '22/09/1990', 54321, 'Rua Vergueiro 500, Ipiranga',
+'mariarita@gmail.com', 11945004872, 'mritaso', 1234);
+
+/*INSERT INTO aluno VALUES (
+aluno_seq.nextval, 'Maria Rita Soares',
+'F', current_date - INTERVAL '23' YEAR, 54321, 'Rua Vergueiro 500, Ipiranga',
+'mariarita@gmail.com', 11945004872, 'mritaso', 1234);*/
+
+SELECT * FROM user_sequences;
+
+-- certificacao -- 
+DELETE FROM certificacao;
+SELECT * FROM certificacao;
+DESC certificacao;
+ 
+INSERT INTO certificacao VALUES('CCNA', 'Cisco Certificed Network Associated', 240, 75, 180, 'ATIVA', 'CISCO SYSTEMS INC', null);
+INSERT INTO certificacao VALUES('CCNP', 'Cisco Certificed Network Professional', 240, 85, 180, 'ATIVA', 'CISCO SYSTEMS INC', 'CCNA');
+INSERT INTO certificacao VALUES('OCA', 'Oracle Certificed Associated', 240, 75, 180, 'ATIVA', 'ORACLE CORPORATION', null);
+
+-- curso -- 
+DESC CURSO;
+SELECT * FROM CURSO;
+INSERT INTO CURSO VALUES(
+'CCNA1', 'Fund de redes computadores', 40, 10,
+75, 1, 'ATIVO', 'CCNA', null, 'Conceitos de redes', 60);
+
+INSERT INTO CURSO VALUES(
+'CCNA2', 'Conceitos e protocolos de roteamento', 60, 16,
+75, 2, 'ATIVO', 'CCNA', null, 'protocolos', 60);
+
+-- atualizando curso
+
+UPDATE curso SET id_curso_pre_req = 'CCNA1', conteudo = 'concetos de roteamento'
+WHERE id_curso = 'CCNA2';
+
+--agora aparece o OCA
+
+INSERT INTO curso VALUES(
+'SQL', 'Fundamentos de SQL', 40, 10, 75, 1, 'ATIVO', 'OCA',
+null, 'Linguagem sql', 60);
+
+
+INSERT INTO curso VALUES(
+'DBA1', 'Administração de banco de dados', 40, 10, 75, 1, 'ATIVO', 'OCA',
+null, 'Linguagem sql', 60);
+
+
+-- aula
+SELECT * FROM aula;
+DELETE FROM aula;
+INSERT INTO aula VALUES(1, 'CCNA1', current_timestamp + 3, 'conceitos redes', null, 'Exercicios cap 1', 'Apostila CCNA Fundamentos', 'http://cisco.ccna.redes.pdf');
+INSERT INTO aula VALUES(1, 'SQL', current_timestamp + 7, 'criando tableas', null, 'Exercicios cap 1', 'SQL Basico', 'http://oracle.oca/sql.pdf');
+
+--Participacao Aula
+SELECT * FROM participacao_aula;
+INSERT INTO participacao_aula VALUES(1, 'CCNA1', 200, null, null, 0, 'F');
+--OR outra forma de insert
+INSERT INTO participacao_aula (presenca, id_curso, num_aula, id_aluno, aproveitamento_atividade) VALUES('F', 'SQL', 1, 201, 0);
+
+
+--Transformar coluna em tabela auxiliar
+SELECT * FROM certificacao;
+DESC certificacao;
+--criar nova tabela para empresa certificadora
+DROP TABLE empresa_certificacao CASCADE CONSTRAINTS;
+CREATE TABLE empresa_certificacao
+(
+    id_empresa SMALLINT NOT NULL,
+    nome_empresa VARCHAR2(60) NOT NULL,
+    pais_empresa VARCHAR2(20) NOT NULL,
+    atuacao_principal VARCHAR2(20) NOT NULL
+);
+-- ADICIONAR PK
+ALTER TABLE empresa_certificacao ADD CONSTRAINT pk_empr_cert
+PRIMARY KEY (id_empresa);
+
+--POPULAR empresa certificacao
+SELECT * FROM empresa_certificacao;
+DELETE FROM empresa_certificacao;
+INSERT INTO empresa_certificacao VALUES(1, 'Cisco Systems Inc', 'EUA', 'Redes Computadores');
+INSERT INTO empresa_certificacao VALUES(2, 'Oracle Corporation', 'EUA', 'Banco de Dados');
+
+SELECT * from empresa_certificacao;
+
+--incluir nova coluna em certificacao q vaiviar fk na empresa-certificacao
+
+ALTER TABLE certificacao ADD id_empresa_cert SMALLINT;
+
+UPDATE certificacao c
+ SET c.id_empresa_cert = (SELECT ec.id_empresa 
+ 	 					FROM empresa_certificacao ec
+ 	 					WHERE UPPER(c.empresa_certificadora) LIKE '%'||UPPER(ec.nome_empresa)||'%');
+
+
+ ALTER TABLE certificacao MODIFY id_empresa_cert nOT NULL;
+
+ ALTER TABLE certificacao ADD CONSTRAINT fk_empr_cert FOREIGN KEY (id_empresa_cert)
+ REFERENCES empresa_certificacao (id_empresa);
+ ALTER TABLE certificacao DROP COLUMN empresa_certificadora;
+
+SELECT c.*, ec.nome_empresa
+FROM certificacao c JOIN empresa_certificacao ec 
+ON (c.id_empresa_cert = ec.id_empresa);
