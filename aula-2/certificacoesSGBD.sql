@@ -319,7 +319,7 @@ UPDATE certificacao c
  	 					WHERE UPPER(c.empresa_certificadora) LIKE '%'||UPPER(ec.nome_empresa)||'%');
 
 
- ALTER TABLE certificacao MODIFY id_empresa_cert nOT NULL;
+ ALTER TABLE certificacao MODIFY id_empresa_cert nOT NULaL;
 
  ALTER TABLE certificacao ADD CONSTRAINT fk_empr_cert FOREIGN KEY (id_empresa_cert)
  REFERENCES empresa_certificacao (id_empresa);
