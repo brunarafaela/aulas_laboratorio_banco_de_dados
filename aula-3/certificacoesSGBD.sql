@@ -431,62 +431,123 @@ Aula 3 - SQL - DDL e DML
 Tipos de Select
 ******************************************************************/
 
+--1 - Select simples que mostra todas as colunas e todas as linhas de uma tabela
 SELECT * FROM ALUNO;
 
+--2 - Descriminando as colunas e colocando condicao/filtro
 SELECT nome_curso, carga_hora_curso, id_cert
 FROM nome_curso
 WHERE duracao_aula >=50 AND NOTA_CORTE_CURSO <= 80;
-
+ 
+ --sintaxe mais comum de um select
 SELECT COLUNA1, COLUNA2, COLUNAN
 FROM TABELA1, TABELA2, TABELA3
 WHERE CONDICAO1 AND CONDICAO2 AND CONDICAOP
 OR CONDICAOQ;
 
+--3 - Funcoes de formatacao de caracteres - UPPER, LOWER, INITCAP
 SELECT UPPER(nome_aluno) AS Maiusculo, LOWER(end_aluno) AS MINUSCULO,
 INITCAP(email_aluno) AS "PRIMEIRA MAI RESTO MIN"
 FROM ALUNO
 WHERE sexo_aluno !='M';
 
+--4- Operador de concatenacao - Pipe duplo ||
 SELECT nome_aluno||' reside em '||end_aluno||' e nasceu em '||dt_nascto_aluno AS "DADOS DO ALUNO"
 FROM ALUNO
 WHERE sexo_aluno = 'M' OR sexo_aluno !='F';
+
+--5 -Operador LIKE - busca nao exata
+SELECT nome_aluno, end_aluno
+FROM ALUNO
+WHERE UPPER(end_aluno) LIKE '%IPIRANGA%';
 
 SELECT nome_aluno, end_aluno
 FROM ALUNO
 WHERE UPPER(end_aluno) LIKE 'RUA%';
 
+SELECT nome_aluno, end_aluno
+FROM ALUNO
+WHERE UPPER(end_aluno) NOT LIKE '%S_A PAULO%';
+
+SELECT nome_aluno, end_aluno
+FROM ALUNO
+WHERE UPPER(nome_aluno) LIKE 'JOSE%';
+
+SELECT nome_aluno, end_aluno
+FROM ALUNO
+WHERE UPPER(nome_aluno) LIKE 'JOS_%';
+
+
+--6 -Funcao de data
+select * 
+from aluno
+where dt_nascto_aluno >= '01/01/1992';
+
 SELECT * FROM TURMA 
 WHERE dt_inicio BETWEEN '15/08/2020' AND current_date;
 
+SELECT * FROM TURMA 
+WHERE dt_inicio BETWEEN '15/08/2020' AND current_date - 15;
 
-SELECT * FROM DUAL;
-SELECT current_date FROM DUAL;
-SELECT SYSDATE FROM DUAL;
-SELECT current_timestamp FROM DUAL;
-SELECT SYSTIMESTAMP FROM DUAL;
+--7 - Funcoes de data e hora mais comuns
+SELECT * FROM DUAL ;
+SELECT current_date FROM DUAL ;
+SELECT SYSDATE FROM DUAL ;
+SELECT current_timestamp FROM DUAL ;
+SELECT systimestamp FROM DUAL ;
 
+--8 - Funcao EXTRACT - extrai um pedaco da data
 SELECT EXTRACT(DAY FROM current_date) FROM DUAL;
 SELECT EXTRACT(MONTH FROM current_date) FROM DUAL;
 SELECT EXTRACT(YEAR FROM current_date) FROM DUAL;
 SELECT EXTRACT(MINUTE FROM current_timestamp) FROM DUAL;
 
+--aluno que nasceu depois de 1993
+SELECT nome_aluno, dt_nascto_aluno
+FROM aluno
+WHERE EXTRACT(YEAR FROM dt_nascto_aluno) > 1993;
 
+--turmas que iniciaram mês passado
+SELECT *
+FROM TURMA
+WHERE EXTRACT(MONTH FROM dt_inicio) = EXTRACT(MONTH FROM current_date) -1
+
+--alunos que nao nasceram entre março e junho
+SELECT nome_aluno, dt_nascto_aluno, sexo_aluno
+FROM aluno
+WHERE EXTRACT(MONTH FROM dt_nascto_aluno) NOT BETWEEN 3 AND 6;
+
+-- Outra forma usando TO CHAR
 SELECT TO_CHAR(current_date, 'DD-MON-YYYY') FROM DUAL;
 SELECT nome_aluno, dt_nascto_aluno, sexo_aluno
 FROM ALUNO
 WHERE TO_CHAR(dt_nascto_aluno, 'MON') NOT BETWEEN 'MAR' AND 'SET';
 
+--9- Operador INTERVAL em data
+
+--Intervalo de dias
 SELECT current_date + interval '5' day from dual;
+
+--Intervalo de horas
 select current_timestamp + interval '12' hour - interval '15' minute from dual;
+
+--alunos maiores de 18 anos
+SELECT nome_aluno, dt_nascto_aluno, sexo_aluno
+FROM ALUNO
+WHERE dt_nascto_aluno + INTERVAL '18' YEAR <= current_date;
 
 SELECT nome_aluno, dt_nascto_aluno, sexo_aluno
 FROM ALUNO
-WHERE dt_nascto_aluno >= current_date - INTERVAL '28' YEAR;
+WHERE dt_nascto_aluno <= current_date - INTERVAL '28' YEAR;
 
 
---CALCULANDO IDADE ALUNOS --
+--10 - Calculando idade dos alunos
+SELECT nome_aluno, (current_date - dt_nascto_aluno) AS Dias
+FROM ALUNO;
+
 SELECT nome_aluno, ROUND((current_date - dt_nascto_aluno)/365.25,2) AS Idade
 FROM ALUNO;
+
 SELECT nome_aluno, ROUND(MONTHS_BETWEEN(current_date - dt_nascto_aluno)/12,2) AS Idade
 FROM ALUNO;
 
