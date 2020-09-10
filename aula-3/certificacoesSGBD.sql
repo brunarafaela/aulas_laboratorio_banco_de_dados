@@ -496,11 +496,15 @@ SELECT SYSDATE FROM DUAL ;
 SELECT current_timestamp FROM DUAL ;
 SELECT systimestamp FROM DUAL ;
 
+
 --8 - Funcao EXTRACT - extrai um pedaco da data
 SELECT EXTRACT(DAY FROM current_date) FROM DUAL;
 SELECT EXTRACT(MONTH FROM current_date) FROM DUAL;
 SELECT EXTRACT(YEAR FROM current_date) FROM DUAL;
+SELECT EXTRACT(HOUR FROM current_timestamp) FROM DUAL;
+SELECT EXTRACT(SECOND FROM current_timestamp) FROM DUAL;
 SELECT EXTRACT(MINUTE FROM current_timestamp) FROM DUAL;
+
 
 --aluno que nasceu depois de 1993
 SELECT nome_aluno, dt_nascto_aluno
@@ -540,7 +544,6 @@ SELECT nome_aluno, dt_nascto_aluno, sexo_aluno
 FROM ALUNO
 WHERE dt_nascto_aluno <= current_date - INTERVAL '28' YEAR;
 
-
 --10 - Calculando idade dos alunos
 SELECT nome_aluno, (current_date - dt_nascto_aluno) AS Dias
 FROM ALUNO;
@@ -549,7 +552,7 @@ SELECT nome_aluno, ROUND((current_date - dt_nascto_aluno)/365.25,2) AS Idade
 FROM ALUNO;
 
 SELECT nome_aluno, ROUND(MONTHS_BETWEEN(current_date - dt_nascto_aluno)/12,2) AS Idade
-FROM ALUNO;
+FROM ALUNO; ---ERRO 
 
 
 
