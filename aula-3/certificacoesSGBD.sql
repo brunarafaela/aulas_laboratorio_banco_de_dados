@@ -436,7 +436,7 @@ SELECT * FROM ALUNO;
 
 --2 - Descriminando as colunas e colocando condicao/filtro
 SELECT nome_curso, carga_hora_curso, id_cert
-FROM nome_curso
+FROM curso
 WHERE duracao_aula >=50 AND NOTA_CORTE_CURSO <= 80;
  
  --sintaxe mais comum de um select
