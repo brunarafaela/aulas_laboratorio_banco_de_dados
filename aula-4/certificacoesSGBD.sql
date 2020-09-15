@@ -702,3 +702,35 @@ WHERE EXTRACT ( MONTH FROM t.dt_termino) = EXTRACT(MONTH FROM Current_date ) + 1
 AND UPPER(ec.nome_empresa) LIKE '%CISCO%' ;
 
 
+
+
+/**************************
+Aula 4 - SQL - DDL e DML
+***************************/
+
+/*****************************************************************
+INNER JOIN E Funcoes de agregacao -- Group by
+******************************************************************/
+
+
+--17- Alunos matriculados em cursos que a empresa certificadora é fabricante dos softwares usados no curso
+SELECT a.nome_aluno, c.nome_curso, f.nome_fabr
+FROM aluno a, matricula mt, curso c, certificacao ce, empresa_certificacao emp, softw_uso_curso swc, software s, fabricante_softw fsw
+WHERE a.id_aluno = mt.id_aluno -- aluno x matricula
+AND (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --matricula x turma
+AND c.id_curso = ce.id_curso-- turma x curso
+AND c.id_cert = ce.id_cert -- curso x certificacao
+AND ce.id_empresa_cert = emp.id_empresa --certificacao x empresa certificadora
+AND swc.id_curso = c.id_curso --curso x uso softw
+AND swc.id_softw = s.id_softw --uso sofw x softw
+AND s.id_fabr = fsw.id_fabr -- softw x fabricante softw
+AND UPPER(emp.nome_empresa) LIKE '%||UPPER(fsw.nome_fabr)||%';
+
+--18- Funcoes de grupo -- agregacao
+SELECT COUNT(*) FROM matricula;
+SELECT * FROM CURSO;
+SELECT COUNT(*) FROM CURSO;
+SELECT COUNT(id_curso_pre_req) FROM CURSO;
+
+--19- por certificacao
+
