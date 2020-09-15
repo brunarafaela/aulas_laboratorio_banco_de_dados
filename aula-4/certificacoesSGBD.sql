@@ -714,15 +714,15 @@ INNER JOIN E Funcoes de agregacao -- Group by
 
 
 --17- Alunos matriculados em cursos que a empresa certificadora é fabricante dos softwares usados no curso
-SELECT a.nome_aluno, c.nome_curso, f.nome_fabr
+SELECT a.nome_aluno, c.nome_curso, fsw.nome_fabr
 FROM aluno a, matricula mt, curso c, certificacao ce, empresa_certificacao emp, softw_uso_curso swc, software s, fabricante_softw fsw
 WHERE a.id_aluno = mt.id_aluno -- aluno x matricula
 AND (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --matricula x turma
-AND c.id_curso = ce.id_curso-- turma x curso
+AND t.id_curso = c.id_curso-- turma x curso
 AND c.id_cert = ce.id_cert -- curso x certificacao
 AND ce.id_empresa_cert = emp.id_empresa --certificacao x empresa certificadora
 AND swc.id_curso = c.id_curso --curso x uso softw
-AND swc.id_softw = s.id_softw --uso sofw x softw
+AND swc.ID_SOFTWARE	 = s.ID_SOFTW --uso sofw x softw
 AND s.id_fabr = fsw.id_fabr -- softw x fabricante softw
 AND UPPER(emp.nome_empresa) LIKE '%||UPPER(fsw.nome_fabr)||%';
 
@@ -740,4 +740,23 @@ FROM curso c;
 
 
 --19- por certificacao
+SELECT COUNT(*) FROM matricula;
+SELECT * FROM CURSO;
+SELECT COUNT(*) FROM CURSO;
+SELECT COUNT(id_curso_pre_req) FROM CURSO;
+SELECT COUNT(*) As Qtde_linhas,
+	SUM(c.carga_hora_curso) as Soma,
+	AVG(c.carga_hora_curso) As Media,
+	MAX(c.carga_hora_curso) As Maior,
+	MIN(c.carga_hora_curso) AS Menor
+FROM curso c
+GROUP BY c.id_cert;
 
+
+--20- Mostrar para cada curso (nome) e o total arrecadado nos ultimos 12 meses (considere a data de matricula)
+SELECT c.nome_curso, SUM(mt.vl_pago) AS "Valor total por curso"
+FROM curso c, matricula mt, turma t
+WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso)
+AND t.id_curso = c.id_curso
+AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH
+GROUP BY c.nome_curso;
