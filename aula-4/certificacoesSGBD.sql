@@ -731,6 +731,13 @@ SELECT COUNT(*) FROM matricula;
 SELECT * FROM CURSO;
 SELECT COUNT(*) FROM CURSO;
 SELECT COUNT(id_curso_pre_req) FROM CURSO;
+SELECT COUNT(*) As Qtde_linhas,
+	SUM(c.carga_hora_curso) as Soma,
+	AVG(c.carga_hora_curso) As Media,
+	MAX(c.carga_hora_curso) As Maior,
+	MIN(c.carga_hora_curso) AS Menor
+FROM curso c;	
+
 
 --19- por certificacao
 
