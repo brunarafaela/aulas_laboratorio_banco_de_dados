@@ -659,12 +659,12 @@ AND c.carga_hora_curso < 200 ;
 
 /* 6- Mostrar os softwares utilizados em certificações da Oracle que tem pré-requisitos : 
 Nome do Software-Versão-Id Certificação Pré-Requisito */
-INSERT INTO softw_uso_curso VALUES ( 'SQL', 'SQLDEV' ) ;
-INSERT INTO softw_uso_curso VALUES ( 'CCNA1', 'PKTRAC' ) ;
-SELECT * FROM softw_uso_curso ;
+INSERT INTO uso_softwares_curso VALUES ( 'SQL', 'SQLDEV' ) ;
+INSERT INTO uso_softwares_curso VALUES ( 'CCNA1', 'PKTRAC' ) ;
+SELECT * FROM uso_softwares_curso ;
 
 SELECT s.nome_softw, s.versao_softw, ce.id_cert_pre_req
-FROM software s, softw_uso_curso swc , curso c, certificacao ce, empresa_certificacao ec
+FROM software s, uso_softwares_curso swc , curso c, certificacao ce, empresa_certificacao ec
 WHERE s.id_softw = swc.id_software -- software x uso softw
 AND swc.id_curso = c.id_curso  -- uso softw x curso
 AND c.id_cert = ce.id_cert  -- curso x cert 
@@ -712,22 +712,22 @@ Aula 4 - SQL - DDL e DML
 INNER JOIN E Funcoes de agregacao -- Group by
 ******************************************************************/
 
+
 select * from aluno;
 select * from matricula;
 select * from aula;
 select * from certificacao;
 select * from empresa_certificacao;
-select * from softw_uso_curso;
 select * from fabricante_softw;
 select * from turma;
 select * from curso;
-select * from participacao aula;
+select * from participacao_aula;
 select * from software;
 select * from uso_softwares_curso;
 
 --17- Alunos matriculados em cursos que a empresa certificadora é fabricante dos softwares usados no curso
 SELECT a.nome_aluno, c.nome_curso, fsw.nome_fabr
-FROM aluno a, matricula mt, curso c, certificacao ce, empresa_certificacao emp, softw_uso_curso swc, software s, fabricante_softw fsw
+FROM aluno a, matricula mt, turma t, curso c, certificacao ce, empresa_certificacao emp, uso_softwares_curso swc, software s, fabricante_softw fsw
 WHERE a.id_aluno = mt.id_aluno -- aluno x matricula
 AND (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --matricula x turma
 AND t.id_curso = c.id_curso-- turma x curso
