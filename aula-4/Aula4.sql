@@ -33,51 +33,54 @@ AND s.id_fabr = fsw.id_fabr -- softw x fabricante softw
 AND UPPER(emp.nome_empresa) LIKE '%||UPPER(fsw.nome_fabr)||%';
 
 --18- Funcoes de grupo -- agregacao
+SELECT * FROM matricula;
 SELECT COUNT(*) FROM matricula;
 SELECT * FROM CURSO;
 SELECT COUNT(*) FROM CURSO;
 SELECT COUNT(id_curso_pre_req) FROM CURSO;
-SELECT COUNT(*) As Qtde_linhas,
-	SUM(c.carga_hora_curso) as Soma,
-	AVG(c.carga_hora_curso) As Media,
-	MAX(c.carga_hora_curso) As Maior,
-	MIN(c.carga_hora_curso) AS Menor
+SELECT COUNT(*) As Qtde_linhas, --Mostra a quantidade de registros
+	SUM(c.carga_hora_curso) as Soma, --Mostra a soma de carga horaria de todos os registros
+	AVG(c.carga_hora_curso) As Media, --Mostra a Media de carga horaria de todos os registros
+	MAX(c.carga_hora_curso) As Maior, --Mostra a Maior de carga horaria de todos os registros
+	MIN(c.carga_hora_curso) AS Menor --Mostra a Menor de carga horaria de todos os registros
 FROM curso c;	
 
 --19- por certificacao
+SELECT * FROM matricula;
 SELECT COUNT(*) FROM matricula;
 SELECT * FROM CURSO;
 SELECT COUNT(*) FROM CURSO;
 SELECT COUNT(id_curso_pre_req) FROM CURSO;
-SELECT COUNT(*) As Qtde_linhas,
-	SUM(c.carga_hora_curso) as Soma,
-	AVG(c.carga_hora_curso) As Media,
-	MAX(c.carga_hora_curso) As Maior,
-	MIN(c.carga_hora_curso) AS Menor
+SELECT COUNT(*) As Qtde_linhas, --Mostra a quantidade de registros
+	SUM(c.carga_hora_curso) as Soma, --Mostra a soma de carga horaria de todos os registros
+	AVG(c.carga_hora_curso) As Media, --Mostra a Media de carga horaria de todos os registros
+	MAX(c.carga_hora_curso) As Maior, --Mostra a Maior de carga horaria de todos os registros
+	MIN(c.carga_hora_curso) AS Menor --Mostra a Menor de carga horaria de todos os registros
 FROM curso c
-GROUP BY c.id_cert;
+GROUP BY c.ID_CERT; --Exibe organizado pelo id
+
 
 
 --20- Mostrar para cada curso (nome) e o total arrecadado nos ultimos 12 meses (considere a data de matricula)
-SELECT c.nome_curso, SUM(mt.vl_pago) AS "Valor total por curso"
+SELECT c.nome_curso, SUM(mt.vl_pago) AS "Valor total por curso" --SUM é a soma total
 FROM curso c, matricula mt, turma t
-WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso)
-AND t.id_curso = c.id_curso
-AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH
+WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --Chave composta de matricula com turma 
+AND t.id_curso = c.id_curso --Turma com curso
+AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH --Data da matricula menor ou igual a hoje - 12 meses
 GROUP BY c.nome_curso;
 
 --21 - IDEM, AGORA POR MES
 UPDATE matricula SET dt_hora_matr = dt_hora_matr - INTERVAL '1' MONTH
 WHERE MOD(num_matricula, 2) =1;
 
-SELECT c.nome_curso, EXTRACT(MONTH FROM mt.dt_hora_matr) AS Mes,
-SUM(mt.vl_pago) AS "Valor total por curso", COUNT(*) AS Matriculados
+SELECT c.nome_curso, EXTRACT(MONTH FROM mt.dt_hora_matr) AS Mes, --Extrai o mês da data da matricula
+SUM(mt.vl_pago) AS "Valor total por curso", COUNT(*) AS Matriculados --SUM Soma total do valor pago - conta matriculados
 FROM curso c, matricula mt, turma t
-WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso)
-AND t.id_curso = c.id_curso
-AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH
-GROUP BY c.nome_curso, EXTRACT(MONTH FROM mt.dt_hora_matr), c.nome_curso
-ORDER BY 1,2;
+WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --Chave composta da matricula com turma
+AND t.id_curso = c.id_curso --Turma com curso
+AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH --Data da matricula menor ou igual a hoje menos 12 meses
+GROUP BY c.nome_curso, EXTRACT(MONTH FROM mt.dt_hora_matr), c.nome_curso --Ordena por nome do curso e por mês 
+ORDER BY 1,2; 
 --Regra do grup by: as colunas que nao tem funcao de grupo, sao as colunas que tem que aparecer na clausula group by
 
 
@@ -89,7 +92,7 @@ WHERE (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --condicao para 
 AND t.id_curso = c.id_curso
 AND mt.dt_hora_matr >= current_timestamp - INTERVAL '12' MONTH
 GROUP BY c.nome_curso, EXTRACT(MONTH FROM mt.dt_hora_matr), c.nome_curso
-HAVING SUM(mt.vl_pago) > 750 --where ou condicao para grupo, depois do grupo by 
+HAVING SUM(mt.vl_pago) > 750 --where ou condicao para grupo, depois do grupo by  --tendo a soma do valor pago maior que 750
 --HAVING COUNT(*)>1
 ORDER BY 1,2;
 
@@ -130,36 +133,3 @@ FROM turma t INNER JOIN matricula mt
 WHERE mt.situacao_matr != 'CANCELADA'
 GROUP BY t.num_turma, t.id_curso, ce.nome_cert
 HAVING COUNT(mt.id_aluno) < 2;
-
- 
-
-/*****************************
- Atividade 4  
- **************************/
-
---1) Reescrever a consulta 17 da aula com a sintaxe do INNER JOIN;
-SELECT a.nome_aluno, c.nome_curso, fsw.nome_fabr
-FROM aluno a INNER JOIN matricula mt
-	ON(a.id_aluno = mt.id_aluno)
-	INNER JOIN turma t
-	ON (mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso)
-	INNER JOIN curso c
-	ON (t.id_curso = c.id_curso)
-	INNER JOIN certificacao ce
-	ON (c.id_cert = ce.id_cert)
-	INNER JOIN empresa_certificacao emp
-	ON(ce.id_empresa_cert = emp.id_empresa)
-	INNER JOIN uso_softwares_curso swc
-	ON(swc.id_curso = c.id_curso)
-	INNER JOIN software s
-	ON(swc.ID_SOFTWARE = s.ID_SOFTW)
-	INNER JOIN fabricante_softw fsw
-	ON(s.id_fabr = fsw.id_fabr)
-WHERE UPPER(emp.nome_empresa) LIKE '%||UPPER(fsw.nome_fabr)||%';
-
---2) Mostrar para cada curso a média de duração das turmas em dias;
---3) Mostrar a quantidade de matriculados por curso, mês (use a data da matrícula) e sexo com idade superior a 21 anos; 4) Mostrar os cursos que utilizam mais de 3 softwares (nome do curso);
---5) Mostrar o nome do curso e a turma para os cursos da empresa Cisco que tiveram mais de R$ 2mil de arrecadação por turma.
---6) Mostrar para cada empresa certificadora o valor total arrecadado e a média com as matrículas nos seus cursos, para cada mês, e o número de matriculados mas desde que ultrapassem mais de 50 por mês.
---7) Mostrar para cada aluno (nome) a quantidade de aulas cursadas em cada curso matriculado.
-

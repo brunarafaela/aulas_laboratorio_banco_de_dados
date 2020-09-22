@@ -275,4 +275,3 @@ FROM aluno a INNER JOIN matricula mt ON ( a.id_aluno = mt.id_aluno)
                            INNER JOIN empresa_certificacao ec ON ( ce.id_empresa_cert = ec.id_empresa)
 WHERE EXTRACT ( MONTH FROM t.dt_termino) = EXTRACT(MONTH FROM Current_date ) + 1
 AND UPPER(ec.nome_empresa) LIKE '%CISCO%' ;
-
