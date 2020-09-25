@@ -936,7 +936,7 @@ ORDER BY 1,2;
 
 --7) Mostrar para cada aluno (nome) a quantidade de aulas cursadas em cada curso matriculado.
 SELECT a.id_aluno, a.nome_aluno, c.nome_curso, COUNT(*) AS Aulas
-FROM aluno a INNER JOIN matricula mt 
+FROM aluno a INNER JOIN matricula mt  
 ON (a.id_aluno = mt.id_aluno) --aluno x matricula
 INNER JOIN turma t
 ON (mt.num_turma = t.num_turma AND mt.id_curso =t.id_curso) --matricula x turma
@@ -954,13 +954,81 @@ GROUP BY a.nome_aluno, c.nome_curso, a.id_aluno;
 SELECT * from participacao_aula;
 
 
-
-
 /**************************
 Aula 5 - SQL - DDL e DML
 ***************************/
 
 /*****************************************************************
-INNER JOIN E Funcoes de agregacao -- Group by
+Subqueries, OUTER JOIN, CASE e DECODE
 ******************************************************************/
+
+
+--26 - mostrados todos os dados do curso com a turma mais cara -- usando subconsulta - um select dentro do outro
+SELECT c.*
+FROM curso c INNER JOIN turma t
+ON(c.id_curso = t.id_curso)
+WHERE t.vl_curso = (SELECT MAX(t.vl_curso)  FROM turma t);
+
+--27- Quem fez os mesmos cursos que Tereza Cristina (Maria Rita Soares no meu banco)
+SELECT a.nome_aluno, mt.id_curso
+FROM matricula mt INNER JOIN turma t
+ON(mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --matricula x turma
+INNER JOIN aluno a
+ON (mt.id_aluno = a.id_aluno) --turma x aluno
+	WHERE mt.id_aluno IN (
+		SELECT mt.id_curso
+		FROM matricula mt INNER JOIN turma t
+		ON(mt.num_turma = t.num_turma AND mt.id_curso = t.id_curso) --matricula x turma
+		INNER JOIN aluno a
+		ON (mt.id_aluno = a.id_aluno) --turma x aluno
+		WHERE UPPER(a.nome_aluno) LIKE 'TERE_A%' AND UPPER(a.nome_aluno) LIKE '%CRISTINA%');
+
+--JUNCAO EXTERNA - OUTER JOIN
+--Relembrando o INNER JOIN
+--Alunos que fizeram matricula
+SELECT a.id_aluno As Aluno, a.nome_aluno, mt.id_aluno AS Matriculado
+FROM aluno a INNER JOIN matricula mt
+ON (a.id_aluno = mt.id_aluno);
+
+--Alunos que nao fizeram matricula
+--Tabela Aluno A   Tabela Matricula B 
+-- => A - B ou seja, quem está no A MAS NAO ESTÁ NO B
+-- A - B = B - A? NAO. SAO COISAS DIFERENTES
+
+SELECT a.id_aluno As Aluno, a.nome_aluno, mt.id_aluno AS Matriculado
+FROM aluno a  LEFT OUTER JOIN matricula mt
+ON (a.id_aluno = mt.id_aluno);
+
+SELECT a.id_aluno As Aluno, a.nome_aluno, mt.id_aluno AS Matriculado
+FROM aluno a  LEFT OUTER JOIN matricula mt --aluno(PK) diferença matricula(FK) A-B
+ON (a.id_aluno = mt.id_aluno)
+WHERE mt.id_aluno IS NULL;
+
+--privilegiando a FK ->nao retornada, nao existe FK que aponte para a PK
+SELECT a.id_aluno As Aluno, a.nome_aluno, mt.id_aluno AS Matriculado
+FROM aluno a  RIGHT OUTER JOIN matricula mt --  matricula(FK) diferença aluno(PK) B-A
+ON (a.id_aluno = mt.id_aluno)
+WHERE a.id_aluno IS NULL;
+
+--usando right mas privilegiando a PK
+SELECT a.id_aluno As Aluno, a.nome_aluno, mt.id_aluno AS Matriculado
+FROM matricula mt RIGHT OUTER JOIN aluno a  --aluno(PK) diferença matricula(FK) A-B
+ON (a.id_aluno = mt.id_aluno)
+WHERE a.id_aluno IS NULL;
+
+--29 -forma mais intuitiva com NOT IN
+SELECT a.id_aluno, a.nome_aluno FROM aluno a --todos os alunos
+WHERE a.id_aluno NOT IN 
+					(SELECT mt.id_aluno FROM matricula mt);
+
+--30 usando operados de conjunto --MINUS no orace, em outros sgbds é EXCEPT
+SELECT a.id_aluno FROM aluno a --todos os alunos
+MINUS (SELECT DISTINCT mt.id_aluno FROM matricula mt);
+
+SELECT a.* FROM aluno a
+WHERE a.id_aluno IN
+     (SELECT a.id_aluno FROM aluno a --todos os alunos
+			MINUS (SELECT DISTINCT mt.id_aluno FROM matricula mt));
+
+--31 mostrar todos os dados dos ursos que ainda nao utilizam software
 
