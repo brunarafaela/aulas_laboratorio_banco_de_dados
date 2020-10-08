@@ -1,0 +1,397 @@
+ALTER SESSION SET NLS_DATE_FORMAT = 'DD-MM-YYYY HH24:MI:SS'; 
+ALTER SESSION SET NLS_LANGUAGE = PORTUGUESE;
+SELECT SESSIONTIMEZONE, CURRENT_TIMESTAMP FROM DUAL;
+
+--TABELA HORARIO--
+DROP TABLE horario CASCADE CONSTRAINTS ;
+CREATE TABLE horario(
+	id_horario INTEGER NOT NULL,
+	dia_semana VARCHAR2(15) NOT NULL,
+	hora_inicial CHAR(20) NOT NULL,
+	hora_final CHAR(20) NOT NULL,
+	turno CHAR(20) NOT NULL,
+	CONSTRAINT HORARIO_PK PRIMARY KEY (id_horario)
+);
+
+--TABELA PACIENTE--
+DROP TABLE paciente CASCADE CONSTRAINTS ;
+CREATE TABLE paciente(
+	num_sus VARCHAR2(30) NOT NULL,
+	nome_paciente VARCHAR2(150) NOT NULL,
+	data_nascimento_paciente DATE NOT NULL,
+	endereco_paciente VARCHAR2(150) NOT NULL,
+	cpf_paciente INTEGER NOT NULL ,
+	responsavel_paciente VARCHAR2(150) NOT NULL,
+	sexo_paciente CHAR(1) NOT NULL,
+	rg_paciente VARCHAR2(10) NOT NULL,
+	cpf_responsavel INTEGER NOT NULL,
+	email_paciente VARCHAR2(100) NOT NULL,
+	telefone_paciente NUMBER(11) NOT NULL,
+	CONSTRAINT PACIENTE_PK PRIMARY KEY (num_sus),
+	CONSTRAINT PACIENTE_CPF UNIQUE (cpf_paciente)
+);
+
+--SEQUENCIA PACIENTE--
+DROP SEQUENCE paciente_seq;
+CREATE SEQUENCE paciente_seq START WITH 1;
+
+--TABELA VACINA--
+DROP TABLE vacina CASCADE CONSTRAINTS ;
+CREATE TABLE vacina(
+	id_vacina INTEGER NOT NULL,
+	desc_vacina VARCHAR2(150) NOT NULL,
+	tipo_vacina VARCHAR2(100) NOT NULL,
+	nome_vacina VARCHAR2(50) NOT NULL,
+	CONSTRAINT VACINA_PK PRIMARY KEY (id_vacina)
+);
+
+
+--TABELA UNIDADE DE SAUDE--
+DROP TABLE unidade_saude CASCADE CONSTRAINTS ;
+CREATE TABLE unidade_saude(
+	id_unidade INTEGER NOT NULL,
+	nome_unidade VARCHAR2(150) NOT NULL,
+	endereco_unidade VARCHAR2(150) NOT NULL,
+	qtd_leitos_uti INTEGER NOT NULL,
+	telefone_unidade NUMBER(11) NOT NULL,
+	regiao_unidade VARCHAR2(100) NOT NULL,
+	qtd_leitos_emergencia INTEGER NOT NULL,
+	respo_unidade INTEGER NOT NULL,
+	distrito_unidade VARCHAR2(100) NOT NULL,
+	CONSTRAINT UNIDADE_SAUDE_PK PRIMARY KEY (id_unidade)
+);
+
+--TABELA FUNCIONARIO--
+DROP TABLE funcionario CASCADE CONSTRAINTS ;
+CREATE TABLE funcionario(
+	registro_funcional INTEGER NOT NULL,
+	email_funcionario VARCHAR2(50) NOT NULL,
+	nome_funcionario VARCHAR2(150) NOT NULL,
+	sexo_funcionario CHAR(1) NOT NULL,
+	endereco_funcionario VARCHAR2(150) NOT NULL,
+	nascimento_funcionario DATE NOT NULL,
+	telefone_funcionario NUMBER(11) NOT NULL,
+	id_unidade INTEGER NOT NULL,
+	CONSTRAINT FUNCIONARIO_PK PRIMARY KEY (registro_funcional)
+);
+
+
+--TABELA COBERTURA--
+DROP TABLE cobertura CASCADE CONSTRAINTS ;
+CREATE TABLE cobertura(
+	id_unidade INTEGER NOT NULL,
+	id_tipo_atendimento INTEGER NOT NULL,
+	CONSTRAINT COBERTURA_PK PRIMARY KEY (id_unidade, id_tipo_atendimento)
+);
+
+--TABELA ESCALA DE TRABALHO--
+DROP TABLE escala_trabalho CASCADE CONSTRAINTS ;
+CREATE TABLE escala_trabalho(
+	data_inicial DATE NOT NULL,
+	registro_funcional INTEGER NOT NULL,
+	id_horario INTEGER NOT NULL,
+	data_final DATE NOT NULL,
+	regime VARCHAR2(15) NOT NULL,
+	CONSTRAINT ESCALA_TRABALHO_PK PRIMARY KEY (data_inicial, registro_funcional, id_horario)
+);
+
+--TABELA MEDICO--
+DROP TABLE medico CASCADE CONSTRAINTS ;
+CREATE TABLE medico(
+	registro_funcional INTEGER NOT NULL,
+	crm_medico INTEGER NOT NULL UNIQUE,
+	especialidade_medico VARCHAR2(100) NOT NULL,
+	CONSTRAINT MEDICO_PK PRIMARY KEY (registro_funcional)
+);
+
+--TABELA ATENDENTE--
+DROP TABLE atendente CASCADE CONSTRAINTS ;
+CREATE TABLE atendente(
+	registro_funcional INTEGER NOT NULL,
+	CONSTRAINT ATENDENTE_PK PRIMARY KEY (registro_funcional)
+);
+
+--TABELA TIPO DE ATENDIMENTO--
+DROP TABLE tipo_atendimento CASCADE CONSTRAINTS ;
+CREATE TABLE tipo_atendimento (
+	id_tipo_atendimento INTEGER NOT NULL,
+	tipo_atendimento VARCHAR2(100) NOT NULL,
+	recursos_minimos VARCHAR2(250) NOT NULL,
+	CONSTRAINT TIPO_ATENDIMENTO_PK PRIMARY KEY (id_tipo_atendimento)
+);
+
+--TABELA ATENDIMENTO--
+DROP TABLE atendimento CASCADE CONSTRAINTS ;
+CREATE TABLE atendimento(
+	id_atendimento INTEGER NOT NULL,
+	situacao_atendimento VARCHAR2(50) NOT NULL,
+	id_paciente INTEGER NOT NULL,
+	registro_funcional INTEGER NOT NULL,
+	data_hora_atendimento TIMESTAMP NOT NULL,
+	num_sus VARCHAR2(30) NOT NULL,
+	id_tipo_atendimento INTEGER NOT NULL,
+	id_unidade INTEGER NOT NULL,
+	CONSTRAINT ATENDIMENTO_PK PRIMARY KEY (id_atendimento)
+);
+
+--SEQUENCIA ATENDIMENTO--
+DROP SEQUENCE atendimento_seq;
+CREATE SEQUENCE atendimento_seq START WITH 220000;
+
+--TABELA VACINACAO--
+DROP TABLE vacinacao CASCADE CONSTRAINTS ;
+CREATE TABLE vacinacao(
+	id_atendimento INTEGER NOT NULL,
+	id_vacina INTEGER NOT NULL,
+	data_dose_anterior DATE NOT NULL,
+	dose_numero VARCHAR2(100) NOT NULL,
+	registro_funcional INTEGER NOT NULL REFERENCES medico (registro_funcional),
+	CONSTRAINT VACINACAO_PK PRIMARY KEY (id_atendimento)
+);
+
+--TABELA CONSULTA MEDICA--
+DROP TABLE consulta_medica CASCADE CONSTRAINTS ;
+CREATE TABLE consulta_medica(
+	id_atendimento INTEGER NOT NULL,
+	observacoes_atendimento VARCHAR2(150) NOT NULL,
+	prescricao VARCHAR2(100) NOT NULL,
+	diagnostico VARCHAR2(150) NOT NULL,
+	registro_funcional INTEGER NOT NULL REFERENCES medico (registro_funcional),
+	CONSTRAINT CONSULTA_PK PRIMARY KEY (id_atendimento)
+);
+
+
+DROP TABLE pronto_atendimento CASCADE CONSTRAINTS ;
+CREATE TABLE pronto_atendimento (
+	id_atendimento INTEGER NOT NULL,
+	motivo_atendimento VARCHAR2(100) NOT NULL,
+	diagnostico VARCHAR2(100) NOT NULL,
+	procedimentos VARCHAR2(100) NOT NULL,
+	registro_funcional INTEGER NOT NULL REFERENCES medico (registro_funcional),
+	CONSTRAINT PRONTO_ATENDIMENTO_PK PRIMARY KEY (id_atendimento)
+);
+
+--TABELA INTERNACAO--
+DROP TABLE internacao CASCADE CONSTRAINTS ;
+CREATE TABLE internacao(
+	id_atendimento INTEGER NOT NULL PRIMARY KEY,
+	num_autorizacao_internacao VARCHAR2(50) NOT NULL,
+	motivo_atendimento VARCHAR2(50) NOT NULL,
+	leito_internacao VARCHAR2(50) NOT NULL,
+	quarto_internacao NUMBER(11) NOT NULL,
+	tipo_internacao VARCHAR2(50) NOT NULL,
+	registro_funcional INTEGER NOT NULL REFERENCES medico (registro_funcional)
+);
+
+--FK ATENDIMENTO X TIPO ATENDIMENTO--
+ALTER TABLE atendimento ADD CONSTRAINT TIPO_ATENDIMENTO_ATENDIMENTO_FK
+FOREIGN KEY (id_tipo_atendimento)
+REFERENCES tipo_atendimento (id_tipo_atendimento)
+NOT DEFERRABLE;
+
+
+--FK ESCALA DE TRABALHO X HORARIO
+ALTER TABLE escala_trabalho ADD CONSTRAINT HORARIO_ESCALA_TRABALHO_FK
+FOREIGN KEY (id_horario)
+REFERENCES horario (id_horario)
+NOT DEFERRABLE;  
+
+--FK ATENDIMENTO X PACIENTE--
+ALTER TABLE atendimento ADD CONSTRAINT PACIENTE_ATENDIMENTO_FK
+FOREIGN KEY (num_sus)
+REFERENCES paciente (num_sus)
+ON DELETE CASCADE
+NOT DEFERRABLE; 
+
+--FK VACINACAO X VACINA--
+ALTER TABLE vacinacao ADD CONSTRAINT VACINA_VACINACAO_FK
+FOREIGN KEY (id_vacina)
+REFERENCES vacina (id_vacina)
+ON DELETE CASCADE
+NOT DEFERRABLE;  
+
+--FK ATENDENTE X FUNCIONARIO--
+ALTER TABLE atendente ADD CONSTRAINT FUNCIONARIO_ATENDENTE_FK
+FOREIGN KEY (registro_funcional)
+REFERENCES funcionario (registro_funcional)
+ON DELETE CASCADE
+NOT DEFERRABLE;
+
+--FK MEDICO X FUNCIONARIO--
+ALTER TABLE medico ADD CONSTRAINT FUNCIONARIO_MEDICO_FK
+FOREIGN KEY (registro_funcional)
+REFERENCES funcionario (registro_funcional)
+ON DELETE CASCADE
+NOT DEFERRABLE;  
+
+--FK ESCALA DE TRABALHO X FUNCIONARIO
+ALTER TABLE escala_trabalho ADD CONSTRAINT FUNCIONARIO_ESCALA_TRABALHO_FK
+FOREIGN KEY (registro_funcional)
+REFERENCES funcionario (registro_funcional)
+NOT DEFERRABLE;  
+
+--FK FUNCIONARIO X UNIDADE
+ALTER TABLE funcionario ADD CONSTRAINT UNIDADE_SAUDE_FUNCIONARIO_FK
+FOREIGN KEY (id_unidade)
+REFERENCES unidade_saude (id_unidade)
+NOT DEFERRABLE;  
+
+--FK COBERTURA X UNIDADE
+ALTER TABLE cobertura ADD CONSTRAINT UNIDADE_SAUDE_COBERTURA_FK
+FOREIGN KEY (id_unidade)
+REFERENCES unidade_saude (id_unidade)
+NOT DEFERRABLE;  
+
+--FK ARENDIMENTO X UNIDADE DE SAUDE
+ALTER TABLE atendimento ADD CONSTRAINT UNIDADE_SAUDE_ATENDIMENTO_FK
+FOREIGN KEY (id_unidade)
+REFERENCES unidade_saude (id_unidade)
+NOT DEFERRABLE; 
+
+--FK ATENDIMENTO X FUNCIONARIO
+ALTER TABLE atendimento ADD CONSTRAINT ATENDENTE_ATENDIMENTO_FK
+FOREIGN KEY (registro_funcional)
+REFERENCES atendente (registro_funcional)
+NOT DEFERRABLE;  
+
+--FK PRONTO ATENDIMENTO X ATENDIMENTO
+ALTER TABLE pronto_atendimento ADD CONSTRAINT ATENDIMENTO_PRONTO_ATENDIMENTO_FK
+FOREIGN KEY (id_atendimento)
+REFERENCES atendimento (id_atendimento)
+ON DELETE CASCADE
+NOT DEFERRABLE;  
+
+--FK CONSULTA X ATENDIMENTO
+ALTER TABLE consulta_medica ADD CONSTRAINT ATENDIMENTO_CONSULTA_MEDICA_FK
+FOREIGN KEY (id_atendimento)
+REFERENCES atendimento (id_atendimento)
+ON DELETE CASCADE
+NOT DEFERRABLE;  
+
+--FK INTERNACAO X ATENDIMENTO
+ALTER TABLE internacao ADD CONSTRAINT ATENDIMENTO_INTERNACAO_FK
+FOREIGN KEY (id_atendimento)
+REFERENCES atendimento (id_atendimento)
+ON DELETE CASCADE
+NOT DEFERRABLE;  
+
+--FK VACINACAO X ATENDIMENTO
+ALTER TABLE vacinacao ADD CONSTRAINT ATENDIMENTO_VACINACAO_FK
+FOREIGN KEY (id_atendimento)
+REFERENCES atendimento (id_atendimento)
+ON DELETE CASCADE
+NOT DEFERRABLE; 
+
+--CREATE NEW TABLES DOS NOVOS REQUISITOS--
+
+--TABELA AGENDAMENTO DE VACINACAO
+DROP TABLE agendamento_vacinacao CASCADE CONSTRAINTS ;
+CREATE TABLE agendamento_vacinacao(
+	id_agendamento INTEGER NOT NULL,
+	num_sus VARCHAR2(30) NOT NULL,
+	data_agendada DATE NOT NULL,
+	status_agendamento VARCHAR2(50) NOT NULL,
+	data_hora_agendamento TIMESTAMP NOT NULL,
+	registro_funcional INTEGER NOT NULL,
+	senha_agendamento VARCHAR2(8) NOT NULL,
+	CONSTRAINT AGENDAMENTO_VACINACAO_PK PRIMARY KEY (id_agendamento),
+	FOREIGN KEY (registro_funcional) REFERENCES atendente (registro_funcional)
+);
+
+--TABELA CAMPANHA DE VACINACAO--
+DROP TABLE campanha_vacinacao CASCADE CONSTRAINTS ;
+CREATE TABLE campanha_vacinacao(
+	id_campanha INTEGER NOT NULL,
+	id_vacina INTEGER NOT NULL,
+	nome_campanha VARCHAR2(100) NOT NULL,
+	prazos_doses_adicionais VARCHAR2(100) NOT NULL,
+	publico_alvo VARCHAR2(100) NOT NULL,
+	data_inicio_campanha DATE NOT NULL,
+	data_fim_campanha DATE NOT NULL,
+	docs_necessarios VARCHAR2(100) NOT NULL,
+	fase_campanha INTEGER NOT NULL,
+	CONSTRAINT CAMPANHA_VACINACAO_PK PRIMARY KEY (id_campanha)
+);
+
+--TABELA CARTEIRA DE VACINACAO--
+DROP TABLE carteira_vacinacao CASCADE CONSTRAINTS ;
+CREATE TABLE carteira_vacinacao(
+	id_carteira INTEGER NOT NULL,
+	num_sus VARCHAR2(30) NOT NULL,
+	id_vacina INTEGER NOT NULL,
+	id_atendimento INTEGER NOT NULL,
+	data_ultima_dose DATE NOT NULL,
+	doses_restantes INTEGER NOT NULL,
+	CONSTRAINT CARTEIRA_VACINACAO_PK PRIMARY KEY (id_carteira)
+);
+
+--ALTER TABLES ANTIGAS --
+
+--Vacinacao-- 
+ALTER TABLE vacinacao DROP COLUMN data_dose_anterior;
+ALTER TABLE vacinacao RENAME COLUMN dose_numero to dose_vacina;
+ALTER TABLE vacinacao ADD(id_campanha INTEGER NOT NULL, id_agendamento INTEGER NOT NULL);
+
+--Vacina-- 
+ALTER TABLE vacina ADD(lote_vacina VARCHAR2(40) NOT NULL,validade_vacina DATE NOT NULL,	reacoes_vacina VARCHAR2(250) NOT NULL,	doencas_combatidas VARCHAR2(250) NOT NULL,qtd_vacina INTEGER NOT NULL);
+
+--Cobertura--
+ALTER TABLE cobertura ADD(id_vacina INTEGER NOT NULL);
+
+--Paciente--
+ALTER TABLE paciente MODIFY sexo_paciente CHAR(1) CHECK (sexo_paciente IN('M','F'));
+ALTER TABLE paciente ADD( senha_paciente VARCHAR2(8) NOT NULL);
+
+--Funcionario -- 
+ALTER TABLE funcionario MODIFY sexo_funcionario CHAR(1)  CHECK (sexo_funcionario IN('M','F'));
+ALTER TABLE funcionario ADD(cargo_funcionario VARCHAR2(100) NOT NULL, data_adminissao_funcionario DATE NOT NULL, data_final_contrato DATE NOT NULL,	tipo_contrato CHAR(20) CHECK (tipo_contrato IN ('EFETIVO', 'TEMPORARIO', 'TERCEIRO')));
+
+--Unidade atendimento--
+ALTER TABLE unidade_saude ADD(  tipo_unidade CHAR(10) NOT NULL CHECK ( tipo_unidade IN ('HOSPITAL', 'UPA', 'UBS', 'AMA') ));
+
+--NOVAS CHAVES ESTRANGEIRAS --
+
+--FK COBERTURA X VACINA
+ALTER TABLE cobertura ADD CONSTRAINT VACINA_COBERTURA_FK
+FOREIGN KEY (id_vacina)
+REFERENCES vacina (id_vacina)
+NOT DEFERRABLE;  
+
+--FK VACINACAO X CAMPANHA
+ALTER TABLE vacinacao ADD CONSTRAINT CAMPANHA_VACINACAO_VACINACAO_FK
+FOREIGN KEY (id_campanha)
+REFERENCES campanha_vacinacao (id_campanha)
+NOT DEFERRABLE; 
+
+
+--FK VACINACAO X AGENDAMENTO
+ALTER TABLE vacinacao ADD CONSTRAINT AGENDAMENTO_VACINACAO_VACINA_FK
+FOREIGN KEY (id_agendamento)
+REFERENCES agendamento_vacinacao (id_agendamento)
+NOT DEFERRABLE;
+
+
+--FK CARTEIRA VACINACAO X VACINA
+ALTER TABLE carteira_vacinacao ADD CONSTRAINT VACINACAO_CARTEIRA_VACINACAO_FK
+FOREIGN KEY (id_atendimento)
+REFERENCES vacinacao (id_atendimento)
+NOT DEFERRABLE; 
+
+--FK CAMPANHA VACINACAO X VACINA
+ALTER TABLE campanha_vacinacao ADD CONSTRAINT VACINA_CAMPANHA_VACINACAO_FK
+FOREIGN KEY (id_vacina)
+REFERENCES vacina (id_vacina)
+NOT DEFERRABLE; 
+
+--FK CARTEIRA VACINACAO X PACIENTE
+ALTER TABLE carteira_vacinacao ADD CONSTRAINT PACIENTE_CARTEIRA_VACINACAO_FK
+FOREIGN KEY (num_sus)
+REFERENCES paciente (num_sus)
+NOT DEFERRABLE;  
+
+--FK AGENDAMENTO X PACIENTE
+ALTER TABLE agendamento_vacinacao ADD CONSTRAINT PACIENTE_AGENDAMENTO_VACINACAO_FK
+FOREIGN KEY (num_sus)
+REFERENCES paciente (num_sus)
+NOT DEFERRABLE;  
+
