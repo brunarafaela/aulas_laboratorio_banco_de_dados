@@ -1203,3 +1203,21 @@ GROUP BY t.id_curso, c.nome_curso, t.num_turma
 HAVING SUM(mt.vl_pago) > 2000
 AND COUNT(mt.id_aluno) / (SELECT MAX(t1.vagas) FROM turma t1
 WHERE t1.num_turma = t.num_turma AND t1.id_curso = t.id_curso) >= 0.9;
+
+
+/******
+Esquema objeto-relacional BD certificações
+******/
+
+
+/*
+Aluno (id_aluno(PK), nome_aluno, sexo_aluno, dt_nascto_aluno, cpf_aluno, {end_aluno}, login, senha)
+Certificacao (id_cert(PK), nome_cert, carga_hora_cert, tempo_maximo, empresa_certificadora)
+Curso (id_curso(PK), nome_curso, carga_hora_curso, qtde_aulas, nota_corte, sequencia, {aulas_programadas}, REF certificacao, {softwares_usados})
+Aula_programada (numero, conteudo_previsto, atividade_prevista, material, arquivo_material)
+continua...
+*/
+
+
+
+
