@@ -8,7 +8,5 @@ Popule com uma linha para cada fabricante criado em b) para a tabela tipada de s
 
 
 /*a) Defina um tipo para turma e a respectiva tabela tipada, com uma referência para o objeto curso. Popule com duas linhas a tabela tipada.*/
-
-
 /*Turma(num_turma(PK),id_curso(PK)(FK),dt_inicio,dt_termino,vagas,horario_aula,vl_curso,instrutor,situacao_turma)*/
 

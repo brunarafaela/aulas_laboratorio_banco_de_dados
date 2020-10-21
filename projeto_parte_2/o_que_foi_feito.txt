@@ -1,9 +1,0 @@
-O que foi feito:
-
-- Corrigido o MER com base no nosso diagrama anterior + diagrama do professor 
-- Mantive algumas tabelas e excluí algumas
-- Gerado novo script com base no diagrama corrigido 
-- Atualizado o MER corrigido com base nos novos requisitos 
-- Alterado o script gerado na correção, com base nos novos requisitos, usando os alter table e criando novas tabelas quando necessário --Bruna
-- Realizado os inserts --Vitor
-- Realizados os selects --Jõao
