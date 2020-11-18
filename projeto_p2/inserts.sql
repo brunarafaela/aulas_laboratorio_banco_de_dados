@@ -1,13 +1,11 @@
-
 /*Integrantes
-
-
 BRUNA_RAFAELA_VIANA_LIMA
 JOAO_VICTOR_DE_SOUZA_CASTRO
 VITOR_JOSE_DE_SOUZA_NASCIMENTO_TEODOSIO
-
 */
 
+
+/*create tables*/
 
 --tipoendereco(tipo_logradouro, logradouro, numero, complemento, bairro, cidade, UF, email, fone);
 --unidade_saude(cod_unid(PK), nome_unid, end_unid, fone_unid, regiao, distrito, tipo_unid, registro REF funcionario);
@@ -225,3 +223,222 @@ CREATE TABLE tabela_carteira_vacinacao OF carteira_vacinacao(
     PRIMARY KEY (num_atendimento),
 ) OBJECT IDENTIFIER IS SYSTEM GENERATED
 NESTED TABLE paciente STORE AS carteira_vacinacao RETURN AS LOCATOR;
+
+
+
+--insert unidade_saude
+
+INSERT INTO tabela_unidade_saude VALUES(
+    0001,
+    'UBS Centro',
+    tipoendereco(
+        'avenida',
+        'paulistana',
+        200,
+        '',
+        'centro',
+        'São Paulo',
+        'SP',
+        'ubscentro@saude.sp.gov.br',
+        tipofone([23311234, 23315678])
+        ),
+    'centro',
+    'sé',
+    'UBS'
+)
+
+INSERT INTO tabela_unidade_saude VALUES(
+    0002,
+    'Hospital Interlagos',
+    tipoendereco(
+        'avenida',
+        'interlagos',
+        2005,
+        '',
+        'interlagos',
+        'São Paulo',
+        'SP',
+        'hospitalinterlagos@saude.sp.gov.br',
+        tipofone([91181234, 91185678, 91180000])
+    ),
+    'sul',
+    'Interlagos',
+    'Hospital'
+);
+
+--insert funcionario
+
+INSERT INTO funcionario VALUES(
+    10001,
+    'José Auugusto'
+    tipoendereco(
+        'rua',
+        'dos autores',
+        2303,
+        'apto 32',
+        'Campo Limpo',
+        'São Paulo',
+        'SP',
+        'jose.augusto@gmail.com',
+        tipofone(65541234)
+    ),
+    'M',
+    '18/07/1987',
+    tipofone(65541234),
+    'jose.augusto@gmail.com',
+    (SELECT REF(e) FROM tabela_unidade_saude e WHERE e.cod_unid = 0002)
+);
+
+INSERT INTO tabela_funcionario VALUES(
+    10002,
+    'Maria Aparecida da Silva'
+    tipoendereco(
+        'avenida',
+        'paulista',
+        1844,
+        'apto 774',
+        'bela vista',
+        'São Paulo',
+        'SP',
+        'mariaap.silva@gmail.com',
+        tipofone([24470145, 87744269])
+    ),
+    'F',
+    '05/10/1974',
+    tipofone([24470145, 87744269]),
+    'mariaap.silva@gmail.com',
+    (SELECT REF(e) FROM tabela_unidade_saude e WHERE e.cod_unid = 0002)
+);
+
+-- paciente
+
+INSERT INTO tabela_paciente VALUES(
+    192001,
+    'João da Costa',
+    tipoendereco(
+        'rua',
+        'das dores',
+        666,
+        'fundos',
+        'capão redondo',
+        'São Paulo',
+        'SP',
+        '',
+        tipofone([98874123])
+    ),
+    'M',
+    '30/09/1971',
+    'Leila da Costa',
+    11233115401,
+    'leiladacosta@gmail.com'
+);
+
+INSERT INTO tabela_paciente VALUES(
+    1924460,
+    'Gabriela de Almeida Prado',
+    tipoendereco(
+        'av',
+        'dos ourives',
+        550,
+        'bloco 1, apto 12',
+        'parque bristol',
+        'São Paulo',
+        'SP',
+        'gaprado@yahoo.com',
+        tipofone([21145544, 987446554])
+    ),
+    'F',
+    '22/04/2000',
+    'Alberto de Almeida',
+    44211566987,
+    'albertoalmeida@hotmail.com'
+);
+
+
+-- vacina
+INSERT INTO tabela_vacina VALUES(
+    'Benzetacil'
+);
+
+INSERT INTO tabela_vacina VALUES(
+    'Covid'
+);
+
+-- vacinação
+
+INSERT INTO tabela_vacinacao VALUES(
+    1000001,
+    tipo_vac(
+        'Benzetacil'
+    ),
+    1,
+    '12/10/2019'
+);
+
+INSERT INTO tabela_vacinacao VALUES(
+    1000002,
+    tipo_vac(
+        'Covid'
+    ),
+    2,
+    ''
+);
+
+--medico
+
+INSERT INTO tabela_medico VALUES(
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10002
+    )
+);
+
+-- atendente
+
+INSERT INTO tabela_atendente VALUES(
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10001
+    )
+);
+
+
+-- atendimento
+
+INSERT INTO tabela_atendimento VALUES(
+    0000001,
+    '20/10/2020',
+    'Sintomas de gripe',
+    'Gripe',
+    tipoatendimento('Atendimento de urgência'),
+    'EM ANDAMENTO',
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10002
+    ),
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10001
+    ),
+    'Paciente encontra-se em observacao'
+);
+
+INSERT INTO tabela_atendimento VALUES(
+    0000002,
+    '21/10/2020',
+    'Sintomas de COVID',
+    'COVID',
+    tipoatendimento('Atendimento de urgência'),
+    'EM ANDAMENTO',
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10002
+    ),
+    (
+        SELECT REF(m) FROM tabela_funcionario m WHERE m.registro_func = 10001
+    ),
+    'Paciente encontra-se em observacao'
+);
+
+-- carteira de vacinacao
+
+INSERT INTO tabela_carteira_vacinacao VALUES(
+    
+
+
+);
