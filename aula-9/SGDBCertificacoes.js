@@ -152,3 +152,85 @@ db.aluno.updateOne(
     {primeiro_nome: /^Maria/i, fones: 4444},
     {$set: {"fones.$": 9999}}
 )
+
+
+// aula 10/novembro
+// criar coleção curso e matriculas no curso dentro de aluno
+db.curso.insert( [  { curso:'SQL', nome: 'Fundamentos de SQL', carga_horaria: 40, certificacao: 'OCA'},                 
+ {curso: 'Redes1', nome: 'Fundamentos de Redes de Computadores', carga_horaria: 50, certificacao: 'CCNA'}   ]  )
+db.curso.find()
+// matriculas dentro de aluno
+db.aluno.find()
+db.aluno.updateMany ({nome: /silva/i} ,
+{$set : {matriculas : [ {curso: 'SQL', data_hora : ISODate("2020-11-10T16:30:00.000Z"), 
+                         turma: 'Noite-001', dias_aula: 'SEG-QUA-SEX'} ,
+                        {curso: 'Redes1', data_hora : ISODate("2020-11-05T22:30:00.000Z"),
+                         turma: 'Integral-003', dias_aula: 'SABADO'} ]  } } )
+db.aluno.updateOne ({rg: '789-X'}, 
+{$set : {matriculas : {curso: 'SQL', data_hora : ISODate("2020-11-10T11:30:00.000Z"), 
+                         turma: 'Noite-001', dias_aula: 'SEG-QUA-SEX'}  }  }  )
+// recuperando dados das coleções relacionadas -> espécie de JOIN
+db.aluno.aggregate (
+    { $lookup :
+       { from: "curso",
+        localField : "matriculas.curso",
+        foreignField : "curso" ,
+        as : "matriculas_realizadas" }
+    }
+)
+// projetando os campos -> equivale a disciminar os campos no SELECT coluna1, coluna2, ..., colunaN
+db.aluno.aggregate (
+    { $lookup :
+       { from: "curso",
+        localField : "matriculas.curso",
+        foreignField : "curso" ,
+        as : "matriculas_realizadas" }
+    }
+    {$unwind: "$matriculas_realizadas"},
+    {$project : { _id:0, nome: 1, nome_completo: 1 "matriculas_realizadas.nome":1 , "matriculas.turma": 1} 
+)
+// colocando condições - filtros
+db.aluno.aggregate (
+    {$match: {sexo: {$not : /masc/i} } }
+    { $lookup :
+       { from: "curso",
+        localField : "matriculas.curso",
+        foreignField : "curso" ,
+        as : "matriculas_realizadas" }
+    }
+    {$unwind: "$matriculas_realizadas"},
+    {$project : { _id:0, nome: 1, nome_completo: 1 "matriculas_realizadas.nome":1 , "matriculas.turma": 1} 
+)
+// aplicando filtro no resultado do aggregate
+db.aluno.aggregate (
+    {$match: {sexo: {$not : /masc/i} } }
+    { $lookup :
+       { from: "curso",
+        localField : "matriculas.curso",
+        foreignField : "curso" ,
+        as : "matriculas_realizadas" }
+    }
+    {$unwind: "$matriculas_realizadas"},
+    {$match: {"matriculas_realizadas.carga_horaria" : { $gte : 40 } } } ,
+    {$project : { _id:0, nome: 1, nome_completo: 1 "matriculas_realizadas.nome":1 , "matriculas.turma": 1,
+       "matriculas_realizadas.carga_horaria" : 1 } 
+)
+// relacionando certificacao com curso
+db.certificacao.aggregate (
+    {$lookup:
+        {from: "curso"
+         localField: "id"
+         foreignField: "certificacao"
+         as: "grade_certificacao"
+        }
+    }
+)
+db.curso.aggregate (
+    {$lookup:
+        {from: "certificacao"
+         localField: "certificacao"
+         foreignField: "id" 
+         as: "grade_certificacao"
+        }
+    }
+)
