@@ -176,11 +176,11 @@ Dt_Prevista_Devolucao DATE NOT NULL,
 Dt_Devolucao DATE NULL,
 Vl_multa_item  NUMBER(6,2)  NULL,
 Situacao_item_emprest VARCHAR2(50) NOT NULL,
-PRIMARY KEY ( Num_emprestimo, Num_exemplar, ISBN) ,
-FOREIGN KEY (Num_emprestimo) REFERENCES emprestimo (Num_emprestimo) ON DELETE CASCADE,
-FOREIGN KEY (Num_exemplar) REFERENCES exemplar (Num_exemplar) ON DELETE CASCADE,
-FOREIGN KEY (ISBN) REFERENCES exemplar (ISBN) ON DELETE CASCADE );
+PRIMARY KEY ( Num_emprestimo, Num_exemplar, ISBN));
 DESCRIBE itens_emprestimo ;
+ALTER TABLE itens_emprestimo ADD CONSTRAINT fk_itens_emprestimo FOREIGN KEY (Num_emprestimo) REFERENCES emprestimo (Num_emprestimo) ON DELETE CASCADE;
+ALTER TABLE itens_emprestimo ADD CONSTRAINT fk_itens_emprestimo_a FOREIGN KEY (Num_exemplar, ISBN) REFERENCES exemplar (Num_exemplar, ISBN) ON DELETE CASCADE;
+
 
 
 /*SEQUENCES*/
@@ -243,17 +243,20 @@ ALTER TABLE autor DROP COLUMN Nacionalidade_autor;
 
 INSERT INTO editora VALUES (001, 'Pearson', 'Av. Francisco Matarazzo, 1400 - Água Branca, São Paulo - SP, 05033-070', 1136721240, 01404158001838, 'elt.br@pearson.com', 'Inglaterra');
 INSERT INTO editora VALUES (002, 'Veneta', 'R. Araújo, 124 - 1º andar - República, São Paulo - SP, 01220-020', 1132111233, 03323583000180, 'comercial@veneta.com.br', 'Brasil');
+INSERT INTO editora VALUES (003, 'Rocco', 'Rua do Passeio, 38 – 11º andar, Centro Passeio Corporate – Torre 1 20021-290 – Rio de Janeiro – RJ', 11321192846, 42444703000159, 'comercial@rocco.com.br', 'Brasil');
 INSERT INTO obra VALUES (9788576055648, 'Computer Organization and Architecture', 'Inglês', 'Informática', 'Livre', 'Computação, arquitetura, informática');
 INSERT INTO obra VALUES (9788575594155, 'Das Kapital', 'Alemão', 'Economia política', 'Livre', 'O Capital, socialismo, marxismo, economia, política');
+INSERT INTO obra VALUES (9788532523051, 'Harry Potter e a Pedra Filosofal', 'Inglês', 'Literatura', 'Livre', 'Literatura, infantil, fantasia');
 INSERT INTO exemplar VALUES (001, 9788576055648, 001, 10, 'Português', '15/09/2017', 864,  'Didático', 'Física', 163, '7 dias', 'Doação', 'Usado');
 INSERT INTO exemplar VALUES (002, 9788576055648, 001, 10, 'Inglês', '15/09/2017', 864,  'Didático', 'Digital', 163, '7 dias', 'Compra', 'Novo');
 INSERT INTO exemplar VALUES (003, 9788575594155, 002, 1, 'Português', '01/01/2014', 927,  'Didático', 'Física', 95.90, '7 dias', 'Doação', 'Usado');
 INSERT INTO exemplar VALUES (004, 9788575594155, 002, 1, 'Inglês', '01/01/2014', 927,  'Didático', 'Digital', 95.90, '7 dias', 'Compra', 'Novo');
+INSERT INTO exemplar VALUES (005, 9788532523051, 003, 5, 'Inglês', '07/04/2000', 264,  'Didático', 'Digital', 26.91, '7 dias', 'Compra', 'Novo');
 INSERT INTO participantes_obra VALUES (9788576055648, 001, 'PRINCIPAL');
 INSERT INTO participantes_obra VALUES (9788575594155, 002, 'PRINCIPAL');
 INSERT INTO usuario VALUES (001, 'Bruna Rafaela', 'Rua Vergueiro 2020, 04194-039, Ipiranga, São Paulo - SP', 11945002391, 'F', 01820973645, 491485592, '30/08/1992', 'ATIVO', 'brunarafaelav@outlook.com');
-INSERT INTO usuario VALUES (002, 'Ugo Garcia Souza', 'AV. São João 1234, 04333-071, Centro, São Paulo - SP', 11935489174, 'M', 01920472603, 584027589, '21/11/1994', 'ATIVO', 'ugogarcia@bol.com.br')
-INSERT INTO usuario VALUES (003,  'João da Silva', 'Rua Frei João, 234, 019632-020, Ipiranga, São Paulo - SP', 11935489171, 'M', 01920472601, 584027581, '19/06/1965', 'ATIVO', 'joaozinho@fatec.com.br');
+INSERT INTO usuario VALUES (002, 'Ugo Garcia SOUZA', 'AV. São João 1234, 04333-071, Centro, São Paulo - SP', 11935489174, 'M', 01920472603, 584027589, '21/11/1994', 'ATIVO', 'ugogarcia@bol.com.br')
+INSERT INTO usuario VALUES (003,  'JOÃO DA SILVA', 'Rua Frei João, 234, 019632-020, Ipiranga, São Paulo - SP', 11935489171, 'M', 01920472601, 584027581, '19/06/1965', 'ATIVO', 'joaozinho@fatec.com.br');
 INSERT INTO usuario VALUES (004,  'Rita Santos', 'AV. Ipiranga, 12345, 07462-029, Centro, São Paulo - SP', 11945002383, 'F', 01820973644, 491485512, '19/06/1977', 'ATIVO', 'ritinha@fatec.com.br');
 INSERT INTO curso VALUES (001, 'Análise e desenvolvimento de sistemas', 'TECNOLOGIA');
 INSERT INTO curso VALUES (002, 'Engenharia biomédica', 'BACHARELADO');
@@ -267,7 +270,8 @@ INSERT INTO reserva_obra VALUES (001,9788576055648, 'ANDAMENTO');
 INSERT INTO reserva_obra VALUES (002,9788575594155, 'ANDAMENTO');
 INSERT INTO emprestimo VALUES (001, current_timestamp - 2, 0.0, 003, 001, 'ANDAMENTO');
 INSERT INTO emprestimo VALUES (002, current_timestamp + 4, 0.0, 004, 002, 'ANDAMENTO');
-
+INSERT INTO itens_emprestimo VALUES (001,001,9788576055648,current_timestamp+7, null, 0.0, 'ANDAMENTO');
+INSERT INTO itens_emprestimo VALUES (002,003,9788575594155,current_timestamp-7, current_timestamp+3, 3, 'ANDAMENTO');
 
 /*SELECTS*/
 
@@ -283,19 +287,19 @@ INSERT INTO emprestimo VALUES (002, current_timestamp + 4, 0.0, 004, 002, 'ANDAM
 
 
 --1. Mostrar os dados dos usuários do sexo feminino no formato : ‘João da Silva tem CPF 123 e nasceu em 10/02/1990’
-SELECT u.Nome_usuario || ' tem CPF ' || u.CPF_USUARIO || ' e nasceu em ' || u.DT_NASCTO_USUARIO
+SELECT u.Nome_usuario || ' tem CPF ' || u.CPF_USUARIO || ' e nasceu em ' || u.DT_NASCTO_USUARIO AS Dados_Usuario
 from usuario u
 WHERE u.SEXO_USUARIO = 'F';
 
 --2. Mostrar o nome, sexo e data de nascimento dos alunos que tem ‘SILVA ou ‘SOUZA no nome e que nasceram entre 1988 e 1992
-SELECT u.nome_usuario, u.sexo_usuario, u.dt_nascto_usuario
+SELECT u.nome_usuario, u.sexo_usuario, u.dt_nascto_usuario AS Dados_Aluno
 FROM usuario u INNER JOIN aluno a
 ON u.cod_usuario = a.cod_usuario
 WHERE UPPER(u.nome_usuario) LIKE '%SILVA%' OR UPPER(u.nome_usuario) LIKE '%SOUZA%'
 AND EXTRACT(YEAR FROM dt_nascto_usuario) BETWEEN 1988 AND 1992;
 
 --3. Mostrar os dados dos alunos que NÃO são de cursos de Tecnologia e que tem mais de 22 anos : Nome aluno-Idade-Nome Curso
-SELECT u.NOME_USUARIO,u.DT_NASCTO_USUARIO, c.nome_curso from aluno a
+SELECT u.NOME_USUARIO,u.DT_NASCTO_USUARIO, c.nome_curso from aluno a 
 INNER JOIN curso c
 ON a.cod_curso = c.cod_curso
 JOIN usuario u ON
@@ -327,7 +331,7 @@ ON au.cod_pais = p.cod_pais
 ORDER BY 1;
 
 --15. Repita a consulta 18 acima, agora utilizando o CASE
-SELECT au.nome_autor, p.nome_pais, p.cod_pais,
+SELECT au.nome_autor, p.nome_pais,
 CASE
 WHEN UPPER (p.nome_pais) LIKE 'ESTADOS UNIDOS' then 'Norte americano'
 WHEN UPPER (p.nome_pais) LIKE 'ALEMANHA' then 'Alemão'
@@ -338,8 +342,11 @@ ON au.cod_pais = p.cod_pais
 ORDER BY 1;
 
 
---5. Mostrar os empréstimos que tiveram origem em reserva no formato: Número Empréstimo – Titulo Exemplar – Número exemplar - ISBN -Data Retirada- Data Devolução – Número Reserva – Data Reserva
-SELECT em.*, re.*
+--5. Mostrar os empréstimos que tiveram origem em reserva no formato: 
+--Número Empréstimo – Titulo Exemplar – Número exemplar - ISBN -
+--Data Retirada- Data Devolução – Número Reserva – Data Reserva
+SELECT em.Num_emprestimo, o.TITULO_ORIGINAL, e.NUM_EXEMPLAR, e.ISBN, em.DT_RETIRADA, ie.Dt_Devolucao, 
+re.Num_reserva, re.Dt_reserva
 FROM emprestimo em INNER JOIN reserva re 
 ON em.NUM_RESERVA = re.NUM_RESERVA
 INNER JOIN reserva_obra ro
@@ -347,7 +354,9 @@ ON re.Num_reserva = ro.Num_reserva
 INNER JOIN obra o 
 ON ro.ISBN = o.ISBN 
 INNER JOIN exemplar e
-ON o.ISBN = e.ISBN;
+ON o.ISBN = e.ISBN
+INNER JOIN itens_emprestimo ie
+ON em.num_emprestimo = ie.num_emprestimo; 
 
 --4. Mostrar os autores que tem obras reservadas por professores admitidos há mais de 5 anos e o assunto não seja ‘Literatura’:  Nome autor – Numero Reserva – Data reserva-Situação Reserva-Titulo Obra-Assunto
 SELECT au.nome_autor, re.num_reserva, re.Dt_reserva, re.Situacao_reserva, o.Titulo_original, o.Genero
