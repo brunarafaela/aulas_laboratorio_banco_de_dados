@@ -33,6 +33,7 @@ CREATE OR REPLACE TYPE tipo_curso AS OBJECT(
     nome_curso VARCHAR2(30),
     tipo VARCHAR2(30));
 
+DROP TABLE curso_table CASCADE CONSTRAINTS;
 CREATE TABLE curso_table OF tipo_curso( PRIMARY KEY (cod_curso)) 
 OBJECT IDENTIFIER IS SYSTEM GENERATED;
 
@@ -70,6 +71,7 @@ CREATE OR REPLACE TYPE tipo_professor UNDER tipo_usuario(
     dt_admissao DATE,
     dt_desligamento DATE);
 
+DROP TABLE professor_table CASCADE CONSTRAINTS;
 CREATE TABLE professor_table OF tipo_professor(
     PRIMARY KEY (cod_usuario));
 
@@ -108,9 +110,33 @@ CREATE OR REPLACE TYPE tipo_itens_reserva AS OBJECT(
     isbn_obra REF tipo_obra,
     situacao_item_reserva VARCHAR2(50));
 
+
+DROP TYPE tipo_emprestimo FORCE;
+CREATE OR REPLACE TYPE tipo_emprestimo AS OBJECT(
+    num_emprestimo INTEGER,
+    cod_usuario REF tipo_aluno,
+    num_reserva REF tipo_reserva,
+    valor_total_multa NUMBER(6,2),
+    situacao_emprestimo VARCHAR2(50),
+    dt_retirada DATE);
+
+DROP TABLE emprestimos CASCADE CONSTRAINTS;
+CREATE TABLE emprestimos OF tipo_emprestimo(
+    PRIMARY KEY (num_emprestimo),
+    CHECK( situacao_emprestimo IN ('SEM DEVOLUÇÃO', 'ATRASADO', 'DEVOLVIDO', 'DEVOLVIDO COM MULTA', 'ANDAMENTO')))
+    OBJECT IDENTIFIER IS SYSTEM GENERATED;
+
 DROP type itens_reserva_table force;
+
 CREATE OR REPLACE TYPE itens_reserva_table AS TABLE of tipo_itens_reserva;
---ALTER TYPE tipo_reserva ADD ATTRIBUTE reservas itens_reserva_table CASCADE;
+
+ALTER TYPE tipo_reserva ADD ATTRIBUTE reservas itens_reserva_table CASCADE;
+
+DROP type itens_reserva_table force;
+
+CREATE OR REPLACE TYPE itens_reserva_table AS TABLE of tipo_itens_reserva;
+
+ALTER TYPE tipo_reserva ADD ATTRIBUTE reservas itens_reserva_table CASCADE;
 
 DROP TYPE tipo_autor FORCE;
 CREATE OR REPLACE TYPE tipo_autor AS OBJECT(
@@ -118,7 +144,11 @@ CREATE OR REPLACE TYPE tipo_autor AS OBJECT(
     nome_autor VARCHAR2(50),
     dt_nasc_autor DATE);
 
-CREATE TABLE autor OF tipo_autor;
+DROP TABLE autor CASCADE CONSTRAINTS;
+CREATE TABLE autor OF tipo_autor(
+    PRIMARY KEY (cod_autor))
+OBJECT IDENTIFIER IS SYSTEM GENERATED;
+ 
 
 DROP TYPE tipo_participacao_obra FORCE;
 CREATE OR REPLACE TYPE tipo_participacao_obra AS OBJECT(
@@ -128,7 +158,7 @@ CREATE OR REPLACE TYPE tipo_participacao_obra AS OBJECT(
  
 CREATE TABLE participacao_obra OF tipo_participacao_obra(
     PRIMARY KEY (isbn_obra, cod_autor),
-    CHECK (tipo_participacao IN ('Co-autor', 'Revisor', 'Tradutor')));
+    CHECK (tipo_participacao IN ('CO-AUTOR', 'REVISOR', 'TRADUTOR')));
 
 
 /*INSERTS*/
@@ -136,11 +166,12 @@ INSERT INTO curso_table VALUES('001', 'Análise de sistemas', 'TECNOLOGIA');
 INSERT INTO aluno_table VALUES(001, 'Bruna Rafaela', tipo_endereco('Rua', 'Vergueiro', 7000, null, 'Ipiranga', 'São Paulo', 'SP', 'brunarafaelav@outlook.com', tipo_fone(11987654321, 11998877665)),  'F', 47925721, '25487596x', DATE '2001-12-19', 'ATIVO', 20041998, DATE '2001-12-19', DATE '2001-12-19', (SELECT REF(c) FROM curso_table c WHERE c.cod_curso = '001'));
 INSERT INTO professor_table VALUES(002, 'Rita Santos',tipo_endereco('Rua', 'Vergueiro', 7000, null, 'Ipiranga', 'São Paulo', 'SP', 'ritinha@fatec.com.b', tipo_fone(11987654321, 11998877665, 11991234567)),'F',57999721,'25487596x',DATE '1977-11-11','EM DIA',2020457896,'Professora doutora efetiva',DATE '2020-05-15',NULL);
 INSERT INTO obra_table VALUES(9788575594155, 'O Capital', 'Alemão', 'Economia política', 'Libre');
-INSERT INTO reserva_table VALUES( 78945, current_timestamp, current_timestamp + 14, 'ANDAMENTO', (SELECT REF(prof) FROM professor_table prof WHERE prof.cod_usuario = 001));
+INSERT INTO reserva_table VALUES(001, current_timestamp, current_timestamp + 14, 'ANDAMENTO', (SELECT REF(prof) FROM professor_table prof WHERE prof.cod_usuario = 001));
 INSERT INTO autor VALUES(001, 'Karl Marx', DATE '1818-05-01');
-INSERT INTO participacao_obra VALUES( (SELECT REF(o) FROM obra_table WHERE o.ISBN = 978853382273), (SELECT REF(a) FROM autor WHERE a.cod_autor = 4001), 'Co-autor');
+INSERT INTO participacao_obra VALUES( (SELECT REF(o) FROM obra_table WHERE o.ISBN = 9788575594155), (SELECT REF(a) FROM autor WHERE a.cod_autor = 001), 'CO-AUTOR');
+INSERT INTO emprestimos VALUES(001, (SELECT REF(a) FROM aluno_table a WHERE a.cod_usuario = 001), (SELECT REF(r) FROM reserva_table r WHERE r.num_reserva = 001),0.00, 'ANDAMENTO', DATE '2020-12-01');
 
-/*SELECTS*/
+/*SELECTS*/-
 
 -- 3- Mostre os itens da reserva das reservas feitas este mês : Num Reserva-Data da Reserva – ISBN-Titulo Obra
 SELECT r.num_reserva, r.dt_reserva, o.ISBN, o.titulo_original 
@@ -169,5 +200,5 @@ SELECT a.nome_autor, COUNT(em.num_emprestimo) FROM autor a
     JOIN TABLE(r.reserva) re ON (re.isbn_obra = o.ISBN)
     JOIN reserva_table r ON (r.num_reserva = re.num_reserva)
     JOIN emprestimo em ON (em.num_reserva = r.num_reserva)
-    JOIN aluno aa ON (em.cod_usuario = aa.cod=ultrapassam)
-    WHERE a.sexo_usuario = 'F'
+    JOIN aluno aa ON (em.cod_usuario = aa.cod_usuario)
+    WHERE a.sexo_usuario = 'F';
