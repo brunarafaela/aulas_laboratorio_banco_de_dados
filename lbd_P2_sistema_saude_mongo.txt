@@ -1,0 +1,154 @@
+use sistema_saude
+show collections 
+// 10/11 i)	Coleções para : Paciente, Unidade de Saúde e Vacina ;
+// ii)	Vetores aninhados : Lotes em Vacinas
+// iii)	Vetores aninhados referenciando nome ou identificador da outra coleção: Atendimento em Paciente referenciando a Unidade de saúde, 
+// para atendimento de vacinação referenciando a vacina
+// iv)	Atributos simples : Médico, Atendente e Aplicador da Vacina em Atendimento
+// unidade saúde
+db.unidade_saude.remove ({})
+db.unidade_saude.insert( [ {sigla: 'UBSSVP', nome: 'AMA UBS Integrada Sao Vicente de Paula', 
+   endereco : { logradouro : 'Rua Vicente da Costa, 289', bairro: 'Ipiranga',cidade :'São Paulo', UF : 'SP',
+   email: 'svicente@sp.gov.br', fone : [1120637354] }, regiao :'SUL', distrito: 'IPIRANGA' , tipo_unidade: 'UBS', 
+   leitos_uti : 0, leitos_emergencia : 10, coordenador : 'Gualberto Torres', 
+   serviços_cobertos : ['Vacinação', 'Consultas', 'Pronto Atendimento'] } ,
+{ sigla: 'HSPM' , nome: 'Hospital do Servidor Publico Municipal', 
+endereco: {logradouro: 'Rua Castro Alves, 60', bairro: 'Liberdade', cidade: 'São Paulo', UF: 'SP', 
+email: 'hospservidor@sp.gov.br', fone : [133977700,1133978008 ] }, 
+regiao: 'CENTRO', distrito: 'LIBERDADE', tipo_unidade : 'HOSPITAL', leitos_uti :30, leitos_emergencia : 80, coordenador : 'Marilia Mendonça',
+    serviços_cobertos : ['Internação', 'Consultas', 'Pronto Atendimento']  } ]) ;
+db.unidade_saude.find() ;
+// vacina -- lote aninhado
+db.vacina.remove({})
+db.vacina.insert( [ { nome: 'Gripe Influenza', forma_aplicação: 'Por injeção via intramuscular na parte superior do braço - músculo deltóide',
+doses: 1, intervalo_doses: 'todo ano', imunização: 'Proteção contra o virus influenza', estoque_minimo: 500,
+estoque_disponivel: 1500, 
+lotes_vacina: [ {lote: '101AH19', data_aquisição: ISODate("2019-01-10"), quantidade: 10000, 
+                 data_validade: ISODate("2021-01-10") , fornecedor: 'Instituto Butantan'},
+                {lote: '307FF20',data_aquisição: ISODate("2020-03-10") , quantidade: 15000, 
+                 data_validade: ISODate("2022-03-10"),fornecedor: 'FIOCRUZ'} ] } ,
+{ nome:'Febre Amarela',forma_aplicação: 'Por injeção via intramuscular na parte superior do braço - músculo deltóide',
+doses: 2, intervalo_doses: 'a cada 10 anos', imunização:  'Proteção contra a febre amarela', estoque_minimo: 800,
+estoque_disponivel :2500, 
+lotes_vacina : [ { lote: '203FE451', data_aquisição: ISODate("2018-03-30") , quantidade: 11000, 
+data_validade : ISODate ("2021-05-05"), fornecedor : 'Instituto Butantan' },
+                   { lote: 'AF201543', data_aquisição: ISODate("2020-08-11"), quantidade: 15050, 
+                   data_validade : ISODate ("2023-05-11"), fornecedor: 'FIOCRUZ' } ] } ] )  
+db.vacina.find() ;                   
+// paciente -- atendimentos aninhados         
+db.paciente.insert( [ {SUS :123456 , nome: 'ANA MARIA CARVALHO', data_nascto :ISODate ("1954-10-25"), sexo : 'F', CPF_responsavel : 987654321,
+tipo_sangue : 'A+', endereço : {logradouro: 'Rua José de Alencar', número : 10, complemento: 'ap 42', município : 'São Paulo', UF: 'SP',
+    fones : [11987654321, 11987123456], email : 'anacarvalho@terra.com.br'} },
+{SUS :229854, nome: 'WASHINGTON SOUZA CRUZ', data_nascto :ISODate ("2009-11-25"), sexo : 'M', CPF_responsavel : 43982176,
+nome_responsavel : 'CATARINA SOUZA', tipo_sangue : 'O-', 
+endereço : {logradouro: 'Av. Vergueiro', número : 7000, município : 'São Paulo', UF: 'SP',
+    fones: [11992341567], email : 'wcruzpereira@gmail.com'} } ] ) 
+db.paciente.find()
+// adicionando os atendimentos
+db.paciente.aggregate( { $addFields: { atendimentos : " "} } )
+db.paciente.updateOne ({SUS:123456 }, {$set: {atendimentos: [
+    { atendimento : 1, dthora_atendimento : ISODate("2020-11-10T10:30:00.000Z") , tipo_atendimento: 'Consulta',
+      motivo: 'Dores nas costas', diagnostico_inicial : 'bico de papagaio', atendente: 'Bete Costa', medico: {CRM: 12345,
+      nome: 'Sandro Morita', especialidade: 'Ortopedia'} , 
+      prescrição : [{medicamento : 'Voltaren Retard 100mg', uso: '1 comprimido a cada 8 horas'}, {terapia: 'Alongamento lombar 5 vezes ao dia'}] ,
+      unidade_saude : 'HSPM', situação : 'Encerrado'} , 
+    { atendimento: 2, dthora_atendimento : ISODate("2020-11-14T19:30:00.000Z") , tipo_atendimento: 'Pronto Atendimento',
+      motivo: 'fortes dores de cabeça', diagnostico_inicial : 'pressão alta', atendente: 'Jairo Vicente', 
+      medico: {CRM: 347812, nome: 'Adriana Cavalcante', especialidade: 'Clinico Geral'}, 
+      procedimentos: ['repouso em maca', 'aplicação de 50 mg de Losartana Potássica em soro fisiológico'] ,
+      unidade_saude: 'UBSSVP', situação : 'Em andamento' } ]  } } )
+db.paciente.updateOne ({SUS:229854 }, {$set: {atendimentos: [
+    { atendimento : 3, dthora_atendimento : ISODate("2020-11-10T10:50:00.000Z") , tipo_atendimento: 'Vacinação',
+     atendente: 'Altair Ribeiro de Lima', vacina : 'Gripe Influenza' , dose_aplicada : 1, aplicada_por : 'Geruza Camargo',
+     unidade_saude : 'UBSSVP', situação: 'Encerrado'} ,
+    { atendimento : 4, dthora_atendimento : ISODate("2020-11-10T10:50:00.000Z") , tipo_atendimento: 'Vacinação',
+     atendente: 'Altair Ribeiro de Lima', vacina : 'Sarampo' , dose_aplicada : 2, aplicada_por : 'Geruza Camargo',
+     unidade_saude : 'UBSSVP', situação: 'Encerrado'} ] } } )
+// funcionario -- para responder consulta 6x
+db.funcionario.insert([{nome: 'Geruza Camargo' , data_admissão : ISODate("2017-10-10T10:50:00.000Z"),
+    cargo: 'Auxiliar de Enfermagem', unidade_saude : 'UBSSVP'},
+    {nome: 'Altair Ribeiro de Lima' , data_admissão : ISODate("2018-04-10T10:50:00.000Z"),
+    cargo: 'Atendente', unidade_saude : 'UBSSVP'},
+    {nome: 'Bete Costa' , data_admissão : ISODate("2015-06-10T10:50:00.000Z"),
+    cargo: 'Atendente', unidade_saude : 'HSPM'},
+    {nome: 'Jairo Vicente' , data_admissão : ISODate("2019-09-08T14:50:00.000Z"),
+    cargo: 'Atendente', unidade_saude : 'UBSSVP'},
+    {nome: 'Catarina Pimenta' , data_admissão : ISODate("2020-10-30T10:50:00.000Z"),
+    cargo: 'Enfermeira', unidade_saude : 'HSPM'}])
+db.funcionario.find() 
+
+//12 - consultas
+// 9i)	Mostre o nome, logradouro, bairro e cidade, e número dos telefones para os pacientes 
+//com menos de 60 anos cujo final de telefone seja número par;
+db.paciente.updateOne ({nome: /washington/i}, {$push : {"endereço.fones": {$each:[11998765432]}}})
+db.paciente.updateOne ({nome: /washington/i, "endereço.fones":119987654322 } ,
+      { $set: {"endereço.fones.$" : 11998765333 }})
+
+db.paciente.aggregate( [
+    {$match: {"endereço.fones": { $mod: [2, 0 ] } }}, 
+    {$project: { nome: 1, "endereço.logradouro" : 1 , "endereço.município" : 1 , "endereço.fones": 1, 
+         nascimento : "$data_nascto" ,
+         idade : { $divide : [ {$subtract: [ new Date(), "$data_nascto"]}, (365*24*60*60*1000) ]  } },
+    },   
+    {$match: { "idade" : {$lt: 60} } } ] )
+
+
+// 9iii)	Mostre todos os dados da carteira de vacinação de pacientes que tomaram a vacina 
+// contra febre amarela nos últimos dois anos :
+// nome do paciente-nome do responsável-data vacinação-numero do atendimento-
+//nome da unidade de saúde-região e distrito-fones da unidade;
+db.paciente.aggregate(
+    {$match : { "atendimentos.tipo_atendimento" : /vacina/i , "atendimentos.vacina": /gripe/i,
+                "atendimentos.dthora_atendimento" : {$gt: ISODate('2018-11-17')} } },
+    {$lookup :
+       { from: "unidade_saude" ,
+         localField : "atendimentos.unidade_saude", 
+         foreignField: "sigla",
+         as : "unidsaude" }
+    },
+    {$unwind : "$unidsaude"},
+    {$project : { nome:1, nome_responsavel: 1, "atendimentos.dthora_atendimento" :1 , "atendimentos.atendimento" :1,
+        "atendimentos.unidade_saude" : 1 , "unidsaude.regiao" : 1, "unidsaude.distrito": 1, 
+        "unidsaude.endereco.fone" : 1 , datavacina : "$atendimentos.dthora_atendimento" } }
+)
+
+
+// 6iii.	Mostre a lista dos atendimentos diários de uma determinada Unidade de Saúde : 
+//Tipo Atendimento – Número – Data Hora Agendada – Paciente – Responsavel Paciente – Sexo- Fone – Email-Agendado por
+db.paciente.aggregate( 
+    {$match : { // "atendimentos.dthora_atendimento" : Date() ,
+                "atendimentos.dthora_atendimento" : ISODate("2020-11-10T08:50:00.000-02:00"),
+                "atendimentos.unidade_saude" : "UBSSVP" }
+    }, 
+    {$project: {"atendimentos.tipo_atendimento": 1 , "atendimentos.atendimento" : 1, 
+                 "atendimentos.dthora_atendimento" :1 , nome: 1, nome_responsavel: 1, sexo: 1 , 
+                "endereço.email" : 1 , "atendimentos.atendente" : 1 , _id : 0 ,
+                } }
+)
+
+
+db.paciente.aggregate( [
+    {$project: { ano_mes_dia_UTC: { $dateToString: { format: "%Y-%m-%d", date: "$data_nascto" } } }} ,
+    {$match: { "ano_mes_dia_UTC" : Date()} } ] )
+
+
+
+// 6x.	Mostre os funcionários da área de enfermagem ( Enfermeiro, Auxiliar de Enfermagem, etc.) 
+// que nunca aplicaram vacina : Nome Funcionário-Cargo-Data Admissão-Tempo de Trabalho 
+// ( quantidade em anos que trabalha na Unidade de saúde). 
+// Resolva de três formas diferentes sendo uma com junção externa.
+
+db.paciente.aggregate (
+    { $lookup:
+       {from: "funcionario",
+        localField : "atendimentos.aplicada_por",
+        foreignField : "nome" ,
+        as : "enfermeiro" }
+    },
+    {$unwind : "$enfermeiro"},
+    {$match: {"enfermeiro.cargo": /enferm/i, "enfermeiro":  { $exists: true }  }},
+    {$project : {_id: 0 , "enfermeiro.nome":1, "enfermeiro.cargo":1, 
+                 "enfermeiro.data_admissão": 1 , admissão : "$enfermeiro.data_admissão" ,
+         tempo_trabalho : { $divide : [ {$subtract: [ new Date(), "$enfermeiro.data_admissão"]}, (365*24*60*60*1000) ]  } },
+    }
+)
