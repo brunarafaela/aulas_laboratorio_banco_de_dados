@@ -1,30 +1,6 @@
-usuario (Cod_usuario(PK), Nome_usuario, End_usuario, Fone_usuario, Sexo_usuario, CPF_usuario, RG_usuario, Dt_nascto_usuario, Situacao_usuario, email_usuario)
-
-aluno (Cod_usuario (PFK), RA, Dt_ingresso, Dt_prevista_termino, Cod_curso(FK))
-
-funcionario (Cod_usuario(PFK), Cod_funcional, cargo, Dt_admissao, Dt_desligamento)
-
-professor (Cod_usuario(PFK), Cod_funcional, Titulacao, Dt_admissao, Dt_desligamento)
-
-curso (Cod_curso(PK), Nome_curso, Tipo_curso)
-
-emprestimo (Num_emprestimo (PK), Dt_retirada, Cod_usuario(PFK), Vl_total_multa, Situacao_emprest, Num_reserva(FK))
-
-itens_emprestimo (Num_emprestimo(PFK), Num_exemplar(PFK), ISBN(PFK), Dt_Prevista_Devolucao, Dt_Devolucao, Vl_multa_item, Situacao_item_emprest)
-
-exemplar (Num_exemplar(PK), ISBN(PFK), Num_edicao, Idioma_exemplar, Ano_publicacao, Qtde_pags, Tipo_exemplar, Tipo_midia, Vl_exemplar, Prazo_devolucao, Tipo_aquisicao, Situacao_exemplar, Cod_editora(FK))
-
-editora (Cod_editora(PK), Nome_edit, End_edit, Fone_edit, CNPJ_edit, contato_edit, Nacionalidade_edit)
-
-reserva (Num_reserva(PK), Dt_reserva, Dt_limite, Situacao_reserva, Cod_usuario(FK))
-
-Reserva_Obra (Num_reserva(PFK), ISBN(PFK), Situacao_item_reserva)
-
+/*exemplar (Num_exemplar(PK), ISBN(PFK), Num_edicao, Idioma_exemplar, Ano_publicacao, Qtde_pags, Tipo_exemplar, Tipo_midia, Vl_exemplar, Prazo_devolucao, Tipo_aquisicao, Situacao_exemplar, Cod_editora(FK))
 obra (ISBN(PK), Titulo_original, Idioma_original, Genero, Classificacao)
-
-Participacao_obra(ISBN(PFK), Cod_autor(PFK), Tipo_participacao)
-
-autor(Cod_autor(PK), Nome_autor, Nacionalidade_autor)
+autor(Cod_autor(PK), Nome_autor, Nacionalidade_autor)*/
 
 
 use bibioteca
